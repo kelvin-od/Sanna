@@ -143,7 +143,7 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
 
   return (
     <div className="mb-4 justify-center mx-8">
-      <div className="flex flex-col py-4 bg-white border border-black-200 rounded-t-lg w-full">
+      <div className="flex flex-col py-4 bg-white border border-gray-300 rounded-md w-full shadow-lg">
         <div className="flex items-center py-4 ml-4 w-full">
           <img className="w-[2rem] rounded-full" src={avatar} alt="avatar" />
           <div className="flex flex-col w-full">

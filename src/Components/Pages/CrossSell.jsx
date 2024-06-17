@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
+// import Footer from '../Footer/Footer';
 import { FaInfoCircle, FaEdit, FaTrashAlt, FaChartLine } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
 import AdvertSection from '../CashCow/AdvertSection';
@@ -224,9 +224,9 @@ const CrossSell = () => {
                 </div>
             </div>
 
-            <div className="w-full bg-white shadow-md mt-4 bottom-0">
+            {/* <div className="w-full bg-white shadow-md mt-4 bottom-0">
                 <Footer />
-            </div>
+            </div> */}
         </div>
     );
 };

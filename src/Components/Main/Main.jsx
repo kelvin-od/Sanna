@@ -39,6 +39,9 @@ const Main = () => {
   const document = postRef.id;
   const [progressBar, setProgressBar] = useState(0);
   const [advertPosts, setAdvertPosts] = useState([]);
+  const defaultLogo = 'path/to/default/logo.png';
+const defaultImage = 'path/to/default/image.png';
+
 
   const handleUpload = (e) => {
     setFile(e.target.files[0]);
@@ -169,8 +172,8 @@ const Main = () => {
   );
 
   return (
-    <div className='flex flex-col items-center bg-gray-100'>
-      <div className='flex flex-col py-4 bg-white w-[90%] rounded-lg border-2 border-black-300'>
+    <div className='flex flex-col items-center bg-white'>
+      <div className='flex flex-col py-4 bg-white w-[90%] rounded-lg border border-gray-400'>
         <div className='flex items-center border-b border-gray-300 pb-4 pl-4 w-full '>
           <img sizes='sm' className='w-[2rem] rounded-full' variant="circular" src={user?.photoURL || avatar} alt="avatar" />
           <form className='w-full' action="" onSubmit={handleSubmitPost}>
@@ -248,19 +251,19 @@ const Main = () => {
                 if (post.retailPrice) {
                   return (
                     <AdvertPostCard
-                      key={index} // Consider using a unique identifier from the post object instead of index
-                      logo={post?.logo}
-                      id={post?.documentId} // Ensure documentId matches your Firestore document field name
-                      uid={post?.uid}
-                      businessName={post?.businessName}
-                      retailPrice={post?.retailPrice}
-                      crossSalePrice={post?.crossSalePrice}
-                      location={post?.location}
-                      expiryDate={post?.expiryDate}
-                      name={post?.name}
-                      image={post?.image}
-                      text={post?.text}
-                      timestamp={new Date(post?.timestamp?.toDate()).toUTCString()}
+                      key={post?.documentId ?? index} // Use a unique identifier, fallback to index if necessary
+                      logo={post?.logo ?? defaultLogo} // Provide a default logo if post.logo is undefined
+                      id={post?.documentId ?? ''} // Ensure documentId matches your Firestore document field name
+                      uid={post?.uid ?? ''}
+                      businessName={post?.businessName ?? 'Unknown Business'}
+                      retailPrice={post?.retailPrice ?? 'N/A'}
+                      crossSalePrice={post?.crossSalePrice ?? 'N/A'}
+                      location={post?.location ?? 'Unknown Location'}
+                      expiryDate={post?.expiryDate ?? 'N/A'}
+                      name={post?.name ?? 'Unnamed Product'}
+                      image={post?.image ?? defaultImage} // Provide a default image if post.image is undefined
+                      text={post?.text ?? 'No description available'}
+                      timestamp={post?.timestamp ? new Date(post.timestamp.toDate()).toUTCString() : 'No timestamp'}
                     />
                   );
                 } else {

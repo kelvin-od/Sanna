@@ -121,7 +121,7 @@ const AdvertSection = () => {
 
     return (
         <div className="mt-16 flex flex-col">
-            <form onSubmit={handleSubmit} className="new-post-form rounded-lg border bg-white p-4 flex flex-col">
+            <form onSubmit={handleSubmit} className="new-post-form rounded-lg border border-gray-300 shadow-lg bg-white p-4 flex flex-col py-8">
                 <div className="w-full">
                     <textarea
                         className="outline-none w-full bg-white rounded-md font-normal text-sm border border-gray-300 p-2"
@@ -201,7 +201,7 @@ const AdvertSection = () => {
                 </div>
 
                 <button
-                    className="border p-2 rounded-lg border-green-500"
+                    className="border p-1 rounded-lg border-green-500"
                     type="submit"
                 >
                     Post
