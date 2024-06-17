@@ -1,0 +1,148 @@
+import React, { useContext, useRef, useReducer, useEffect } from "react";
+import avatar from "../../Assets/Images/avatar.avif";
+import { AuthContext } from "../AppContext/AppContext";
+import {
+    setDoc,
+    collection,
+    doc,
+    serverTimestamp,
+    orderBy,
+    query,
+    onSnapshot,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+} from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import {
+    PostsReducer,
+    postActions,
+    postsStates,
+} from "../AppContext/PostReducer";
+import Comment from "./Comment";
+
+const CommentSection = ({ open, setOpen, postId, uid }) => {
+    const comment = useRef("");
+    const { user, userData } = useContext(AuthContext);
+    const [state, dispatch] = useReducer(PostsReducer, postsStates);
+    const { ADD_COMMENT, HANDLE_ERROR } = postActions;
+
+    const addComment = async (e) => {
+        e.preventDefault();
+        if (comment.current.value !== "") {
+            try {
+                const commentRef = doc(collection(db, "posts", postId, "comments"));
+                await setDoc(commentRef, {
+                    id: commentRef.id,
+                    comment: comment.current.value,
+                    image: user?.photoURL,
+                    name: userData?.name?.charAt(0)?.toUpperCase() + userData?.name?.slice(1) || user?.displayName?.split(" ")[0],
+                    timestamp: serverTimestamp(),
+                    uid: user.uid, // Add uid of the commenter
+                });
+                await addNotification("comment", `${user.displayName} commented on your post`, uid, postId);
+                comment.current.value = "";
+                setOpen(false); // Close comment section after adding a comment
+            } catch (err) {
+                dispatch({ type: HANDLE_ERROR, error: err.message });
+                alert(err.message);
+                console.log(err.message);
+            }
+        }
+    };
+
+    const addNotification = async (type, message, userId, postId) => {
+        try {
+            await addDoc(collection(db, "notifications"), {
+                userId,
+                type,
+                postId,
+                message,
+                timestamp: new Date(),
+            });
+        } catch (err) {
+            console.error("Error adding notification: ", err);
+        }
+    };
+
+    useEffect(() => {
+        const collectionOfComments = collection(db, `posts/${postId}/comments`);
+        const q = query(collectionOfComments, orderBy("timestamp", "desc"));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            dispatch({
+                type: ADD_COMMENT,
+                comments: snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+            });
+        });
+
+        return () => unsubscribe();
+    }, [postId, ADD_COMMENT, HANDLE_ERROR]);
+
+    const editComment = async (id, newComment) => {
+        try {
+            const commentRef = doc(collection(db, "posts", postId, "comments"), id);
+            await updateDoc(commentRef, {
+                comment: newComment,
+            });
+        } catch (err) {
+            console.error("Error updating comment: ", err);
+        }
+    };
+
+    const deleteComment = async (id) => {
+        try {
+            const commentRef = doc(collection(db, "posts", postId, "comments"), id);
+            await deleteDoc(commentRef);
+        } catch (err) {
+            console.error("Error deleting comment: ", err);
+        }
+    };
+
+    const replyToComment = async (reply, parentCommentId) => {
+        try {
+            const replyRef = doc(collection(db, "posts", postId, "comments", parentCommentId, "replies"));
+            await setDoc(replyRef, {
+                id: replyRef.id,
+                comment: reply,
+                image: user.photoURL,
+                name: user.displayName,
+                timestamp: serverTimestamp(),
+                uid: user.uid,
+            });
+        } catch (error) {
+            console.error("Error replying to comment: ", error);
+        }
+    };
+
+    return (
+        <div className={`flex flex-col bg-white w-full py-2 rounded-b-3xl ${open ? '' : 'hidden'}`}>
+            <div className="flex items-center">
+                <div className="mx-2">
+                    <img className="w-[2rem] rounded-full" src={user?.photoURL || avatar} alt="avatar" />
+                </div>
+                <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
+                    <textarea ref={comment} className="bg-green-50 w-full p-2 text-sm rounded-lg border-none outline-none" placeholder="Write a comment"></textarea>
+                    <button className="p-1" onClick={addComment}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div className="bg-white w-full py-1 rounded-b-3xl">
+                {state.comments.map((comment) => (
+                    <Comment
+                        key={comment.id}
+                        {...comment}
+                        onEdit={(newComment) => editComment(comment.id, newComment)}
+                        onDelete={() => deleteComment(comment.id)}
+                        onReply={(reply) => replyToComment(reply, comment.id)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default CommentSection;

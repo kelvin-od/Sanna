@@ -54,7 +54,6 @@ const Login = () => {
     const { email, password } = formik.values;
     if (formik.isValid === true) {
       loginWithEmailAndPassword(email, password);
-      setLoading(true);
     } else {
       setLoading(false);
       alert("Check your input fields");

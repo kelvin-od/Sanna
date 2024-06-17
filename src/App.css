@@ -1,5 +1,11 @@
+/* Global Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Specific element styling (assuming you want to style the body or another element) */
+body {
+  background: #f3f4f6;
 }

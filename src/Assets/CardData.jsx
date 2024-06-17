@@ -17,12 +17,12 @@ const CardData = [
     image: card2,
     status: "Online",
   },
-  {
-    id: "3",
-    name: "Jana Jane",
-    image: card3,
-    status: "Offline",
-  },
+  // {
+  //   id: "3",
+  //   name: "Jana Jane",
+  //   image: card3,
+  //   status: "Offline",
+  // },
 //   {
 //     id: "4",
 //     name: "Robert Bend",
