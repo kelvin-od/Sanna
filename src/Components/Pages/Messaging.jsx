@@ -1,207 +1,166 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, orderBy, addDoc, serverTimestamp, onSnapshot, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase/firebase'; 
+import React, { useState, useEffect, useContext } from 'react';
+import { collection, query, where, onSnapshot, getDocs, addDoc, orderBy } from "firebase/firestore";
+import { db } from '../firebase/firebase';
+import { AuthContext } from "../AppContext/AppContext";
 import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
 
 const Messaging = () => {
-  const [user, setUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [activeSection, setActiveSection] = useState('read');
-  const [receiverId, setReceiverId] = useState(null);
-  const [users, setUsers] = useState([]); 
-  const messagesEndRef = useRef(null);
+    const { user } = useContext(AuthContext);
+    const [conversations, setConversations] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setUser(user);
-        fetchUsers(); // Fetch users from Firebase
-      } else {
-        setUser(null);
-      }
-    });
+    useEffect(() => {
+        if (user) {
+            const q = query(
+                collection(db, "messages"),
+                where("receiverId", "==", user.uid)
+            );
 
-    return () => unsubscribe();
-  }, []);
+            const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+                const uniqueUsers = new Set();
+                querySnapshot.forEach((doc) => {
+                    const message = doc.data();
+                    if (message.senderId !== user.uid) {
+                        uniqueUsers.add(message.senderId);
+                    }
+                    if (message.receiverId !== user.uid) {
+                        uniqueUsers.add(message.receiverId);
+                    }
+                });
 
-  const fetchUsers = async () => {
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const usersList = usersSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    setUsers(usersList);
-  };
+                const convos = [];
+                for (let uid of uniqueUsers) {
+                    const userDoc = await getDocs(query(collection(db, "users"), where("uid", "==", uid)));
+                    userDoc.forEach((doc) => {
+                        convos.push(doc.data());
+                    });
+                }
 
-  useEffect(() => {
-    if (user && receiverId) {
-      const q = query(
-        collection(db, 'messages'),
-        orderBy('timestamp', 'desc')
-      );
-  
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const fetchedMessages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })).filter(message => 
-          (message.senderId === user.uid && message.receiverId === receiverId) || 
-          (message.senderId === receiverId && message.receiverId === user.uid)
-        );
-        setMessages(fetchedMessages);
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      });
-  
-      return () => unsubscribe();
-    }
-  }, [user, receiverId]);
+                setConversations(convos);
+            });
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!user || newMessage.trim() === '' || !receiverId) return;
+            return () => unsubscribe();
+        }
+    }, [user]);
 
-    await addDoc(collection(db, 'messages'), {
-      text: newMessage,
-      senderId: user.uid,
-      receiverId: receiverId,
-      timestamp: serverTimestamp(),
-      read: false
-    });
+    useEffect(() => {
+        if (selectedUser) {
+            const q = query(
+                collection(db, "messages"),
+                orderBy("timestamp"),
+                where("senderId", "in", [user.uid, selectedUser.uid]),
+                where("receiverId", "in", [user.uid, selectedUser.uid])
+            );
 
-    setNewMessage('');
-  };
+            const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+                const msgs = [];
+                for (const doc of querySnapshot.docs) {
+                    const message = doc.data();
+                    const messageObj = {
+                        id: doc.id,
+                        ...message,
+                        replies: []
+                    };
 
-  const deleteMessage = async (id) => {
-    await deleteDoc(doc(db, 'messages', id));
-  };
+                    // Fetch replies for each message
+                    const repliesRef = collection(db, "messages", doc.id, "replies");
+                    const repliesSnapshot = await getDocs(repliesRef);
+                    const replies = repliesSnapshot.docs.map(replyDoc => ({
+                        id: replyDoc.id,
+                        ...replyDoc.data()
+                    }));
+                    messageObj.replies = replies;
+                    msgs.push(messageObj);
+                }
 
-  useEffect(() => {
-    if (searchTerm.trim() !== '') {
-      const filteredResults = users.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      setSearchResults(filteredResults);
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchTerm, users]);
+                setMessages(msgs);
+            });
 
-  const handleSectionChange = (section) => {
-    setActiveSection(section);
-  };
+            return () => unsubscribe();
+        }
+    }, [selectedUser, user]);
 
-  const markAsRead = async (messageId) => {
-    await updateDoc(doc(db, 'messages', messageId), { read: true });
-  };
+    const sendMessage = async () => {
+        if (newMessage.trim() === "" || !selectedUser) return;
 
-  const filteredMessages = messages.filter(message => {
-    if (activeSection === 'read') {
-      return message.read;
-    } else if (activeSection === 'unread') {
-      return !message.read;
-    } else {
-      return true;
-    }
-  });
+        const messageData = {
+            senderId: user.uid,
+            receiverId: selectedUser.uid,
+            text: newMessage,
+            timestamp: new Date()
+        };
 
-  return (
-    <div className="flex flex-col h-screen">
-      <div className="fixed top-0 z-10 w-full bg-white shadow-md">
-        <Navbar />
-      </div>
-      <div className="flex flex-grow mt-16">
-        {/* Sidebar with Users */}
-        <div className="w-1/4 bg-gray-100 border-r border-gray-300 p-4">
-          <h2 className="text-lg font-semibold mb-4">Users</h2>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search users..."
-            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none"
-          />
-          <div className="overflow-y-auto">
-            {searchResults.length > 0 ? (
-              searchResults.map(user => (
-                <div key={user.id} onClick={() => setReceiverId(user.id)} className="p-2 cursor-pointer hover:bg-gray-200 rounded-lg">
-                  <p className="text-sm">{user.name}</p>
+        try {
+            const docRef = await addDoc(collection(db, "messages"), messageData);
+            await addDoc(collection(db, "messages", docRef.id, "replies"), {
+                senderId: user.uid,
+                text: newMessage,
+                timestamp: new Date()
+            });
+            setNewMessage("");
+        } catch (error) {
+            console.error("Error sending message: ", error);
+        }
+    };
+
+    const handleUserClick = (user) => {
+        setSelectedUser(user);
+    };
+
+    return (
+        <div className="flex flex-col h-screen">
+            <div className="fixed top-0 z-10 w-full bg-white shadow-md">
+                <Navbar />
+            </div>
+            <div className="flex flex-1 mt-16 p-4">
+                <div className="w-1/4 p-4 border-r">
+                    <h2 className="font-medium mb-4 text-sm">Conversations</h2>
+                    {conversations.map((convo) => (
+                        <div
+                            key={convo.uid}
+                            onClick={() => handleUserClick(convo)}
+                            className="cursor-pointer p-2 hover:bg-gray-200 rounded text-sm"
+                        >
+                            {convo.name}
+                        </div>
+                    ))}
                 </div>
-              ))
-            ) : (
-              users.map(user => (
-                <div key={user.id} onClick={() => setReceiverId(user.id)} className="p-2 cursor-pointer hover:bg-gray-200 rounded-lg">
-                  <p className="text-sm">{user.name}</p>
+                <div className="flex-1 p-4">
+                    {selectedUser ? (
+                        <div>
+                            <h2 className="font-medium mb-4 text-sm">Conversation with {selectedUser.name}</h2>
+                            <div className="border p-4 mb-4 h-40 overflow-y-scroll">
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className={`mb-2 ${msg.senderId === user.uid ? 'text-right' : 'text-left'}`}>
+                                        <p className="bg-gray-200 p-1 text-sm rounded inline-block">{msg.text}</p>
+                                        {msg.replies && msg.replies.map((reply) => (
+                                            <div key={reply.id} className={`ml-4 mb-2 ${reply.senderId === user.uid ? 'text-right' : 'text-left'}`}>
+                                                <p className="bg-gray-100 p-1 text-sm rounded inline-block">{reply.text}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex">
+                                <textarea
+                                    className="w-[60%] border p-1 rounded text-sm"
+                                    rows="1"
+                                    placeholder="Type your message..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                />
+                                <button className="bg-green-500 text-white py-1 px-7 text-sm rounded ml-2" onClick={sendMessage}>Send</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className='text-sm'>Select a conversation to view</div>
+                    )}
                 </div>
-              ))
-            )}
-          </div>
+            </div>
         </div>
-        {/* Messages */}
-        <div className="flex flex-col w-3/4 p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">
-              {receiverId ? `Chat with ${users.find(u => u.id === receiverId)?.name}` : 'Select a user to chat'}
-            </h2>
-          </div>
-          <div className="flex space-x-4 mb-4 border-b border-gray-300">
-            <button 
-              onClick={() => handleSectionChange('read')} 
-              className={`px-4 text-sm py-2 ${activeSection === 'read' ? 'border-b-2 border-green-500' : 'text-gray-700'} focus:outline-none`}
-            >
-              Read Messages
-            </button>
-            <button 
-              onClick={() => handleSectionChange('unread')} 
-              className={`px-4 text-sm py-2 ${activeSection === 'unread' ? 'border-b-2 border-green-500' : 'text-gray-700'} focus:outline-none`}
-            >
-              Unread Messages
-            </button>
-            <button 
-              onClick={() => handleSectionChange('compose')} 
-              className={`px-4 text-sm py-2 ${activeSection === 'compose' ? 'border-b-2 border-green-500' : 'text-gray-700'} focus:outline-none`}
-            >
-              Compose Message
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto mb-4">
-            {activeSection === 'compose' && receiverId && (
-              <form onSubmit={sendMessage} className="flex mb-4">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message here..."
-                  className="w-[50%] px-4 py-2 mr-2 border border-gray-300 rounded-lg focus:outline-none"
-                />
-                <button type="submit" className="px-6 py-2 text-black-400 text-sm border border-gray-500 rounded-lg hover:bg-green-100 focus:outline-none">Send</button>
-              </form>
-            )}
-            {filteredMessages.length > 0 ? (
-              filteredMessages.map(message => (
-                <div key={message.id} className={`p-2 w-[50%] rounded-lg mb-2 ${message.senderId === user?.uid ? 'bg-green-100 self-end' : 'bg-gray-100 self-start'}`}>
-                  <p className="text-sm">{message.text}</p>
-                  {message.senderId === user.uid && (
-                    <button onClick={() => deleteMessage(message.id)} className="text-red-500 text-xs mt-1">Delete</button>
-                  )}
-                  {!message.read && message.senderId !== user.uid && (
-                    <button onClick={() => markAsRead(message.id)} className="text-green-500 text-xs mt-1">Mark as Read</button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No messages found.</p>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-      </div>
-      <div className="fixed bottom-0 z-10 w-full bg-white shadow-md">
-        <Footer />
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Messaging;

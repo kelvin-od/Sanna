@@ -6,7 +6,7 @@ import { FaInfoCircle, FaEdit, FaTrashAlt, FaChartLine } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
 import AdvertSection from '../CashCow/AdvertSection';
 import { db } from '../firebase/firebase';
-import { collection, query, orderBy, where, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, where, onSnapshot, deleteDoc, doc, getDoc, getDocs, collectionGroup } from 'firebase/firestore';
 import { AuthContext } from '../AppContext/AppContext';
 import { Chart, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend } from 'chart.js';
 
@@ -26,8 +26,8 @@ const CrossSell = () => {
     const [adverts, setAdverts] = useState([]);
     const [currentAdvertId, setCurrentAdvertId] = useState(null);
     const [viewershipData, setViewershipData] = useState(null);
-    const [trafficData, setTrafficData] = useState(null);
     const [interactionsData, setInteractionsData] = useState(null);
+    const [messages, setMessages] = useState([]);
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
@@ -78,7 +78,7 @@ const CrossSell = () => {
                 const data = docSnap.data();
                 console.log(`Advert data:`, data);
 
-                if (data.viewership && data.traffic && data.interactions) {
+                if (data.viewership && data.interactions) {
                     setViewershipData({
                         labels: data.viewership.labels,
                         datasets: [{
@@ -86,17 +86,6 @@ const CrossSell = () => {
                             data: data.viewership.data,
                             backgroundColor: 'rgba(75,192,192,0.4)',
                             borderColor: 'rgba(75,192,192,1)',
-                            borderWidth: 1,
-                        }]
-                    });
-
-                    setTrafficData({
-                        labels: data.traffic.labels,
-                        datasets: [{
-                            label: 'Traffic',
-                            data: data.traffic.data,
-                            backgroundColor: 'rgba(255,99,132,0.2)',
-                            borderColor: 'rgba(255,99,132,1)',
                             borderWidth: 1,
                         }]
                     });
@@ -112,30 +101,47 @@ const CrossSell = () => {
                         }]
                     });
                 } else {
-                    console.error("Data missing expected fields: viewership, traffic, or interactions.");
+                    console.error("Data missing expected fields: viewership or interactions.");
                 }
             } else {
                 console.error("No such document!");
             }
+
+            const messagesRef = collection(db, "adverts", advertId, "messages");
+            const messagesSnapshot = await getDocs(messagesRef);
+            const messagesList = messagesSnapshot.docs.map(doc => doc.data());
+            setMessages(messagesList);
+
         } catch (error) {
             console.error("Error fetching analytics data: ", error);
         }
     };
 
     const renderContent = () => {
-        if (currentAdvertId && viewershipData && trafficData && interactionsData) {
+        if (currentAdvertId) {
             return (
-                <>
-                    <div className="mt-2 p-2 bg-gray-100 rounded-md">
-                        <Line data={viewershipData} />
-                    </div>
-                    <div className="mt-2 p-2 bg-gray-100 rounded-md">
-                        <Bar data={trafficData} />
-                    </div>
-                    <div className="mt-2 p-2 bg-gray-100 rounded-md">
-                        <Bar data={interactionsData} />
-                    </div>
-                </>
+                <div>
+                    {viewershipData && (
+                        <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                            <Line data={viewershipData} />
+                        </div>
+                    )}
+                    {interactionsData && (
+                        <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                            <Bar data={interactionsData} />
+                        </div>
+                    )}
+                    {messages.length > 0 && (
+                        <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                            <h3 className="text-lg font-semibold mb-2">Messages</h3>
+                            <ul>
+                                {messages.map((message, index) => (
+                                    <li key={index} className="mb-1">{message.text}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
             );
         } else {
             return <p>Select an advert to view its performance.</p>;

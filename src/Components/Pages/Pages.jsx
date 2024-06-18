@@ -10,11 +10,13 @@ import Messaging from "./Messaging";
 import Profile from "./Profile"
 import Post from "../Posts/Post"
 import CrossSell from "./CrossSell"
+// import LandingPage from "../PublicPages/LandingPage";
 
 const Pages = () => {
   return (
     <div>
       <Routes>
+        {/* <Route path="/" element={<LandingPage /> } /> */}
         <Route path="/" element={<Home />}></Route>
         <Route path="/login" element={ <Login />}/>
         <Route path="/register" element={<Register />} />

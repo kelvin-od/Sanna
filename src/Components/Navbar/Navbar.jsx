@@ -57,13 +57,13 @@ const Navbar = () => {
 
     return (
         <div>
-            <nav className='sticky top-0 bg-gray-200 p-1 border-b border-gray-300 '>
+            <nav className='sticky top-0 bg-white-500 p-1 border-b-1 border-gray-200 shadow-md'>
                 <div className="flex items-center justify-between mx-6 mr-24">
                     <div className='text-green-700 text-2xl font-bold ml-16'>
                         <Link to="/">Sanna</Link>
                     </div>
                     <div>
-                        <input className='rounded-lg py-1 w-96 focus:outline-none bg-transparent border border-gray-400 px-3' type="text" placeholder='Search' />
+                        <input className='rounded-lg py-2 w-96 focus:outline-none bg-green-50 px-3' type="text" placeholder='Search' />
                     </div>
 
                     <div className='md:hidden'>
