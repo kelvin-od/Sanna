@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect } from 'react';
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -8,31 +8,28 @@ import { AuthContext } from "../AppContext/AppContext";
 import { auth, onAuthStateChanged } from "../firebase/firebase";
 
 const Login = () => {
+  const { signInWithGoogle, loginWithEmailAndPassword } = useContext(AuthContext);
 
-  const { signInWithGoogle, loginWithEmailAndPassword } =
-    useContext(AuthContext);
-
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const [passwordShown, setPasswordShown] = useState(false);
+  
   const togglePasswordVisiblity = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     setPasswordShown((cur) => !cur);
-  }
+  };
 
   useEffect(() => {
     setLoading(true);
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/");
+        navigate("/home");
         setLoading(false);
       } else {
         setLoading(false);
       }
     });
   }, [navigate]);
-
 
   let initialValues = {
     email: "",
@@ -47,7 +44,6 @@ const Login = () => {
       .matches(/^[a-zA-Z]+$/, "Password can only contain letters"),
   });
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -59,113 +55,87 @@ const Login = () => {
       alert("Check your input fields");
     }
 
-    console.log("formik", formik)
-  }
+    console.log("formik", formik);
+  };
 
   const formik = useFormik({ initialValues, validationSchema, handleSubmit });
-
-
 
   return (
     <>
       {loading ? (
-        <div className="grid text-center justify-center h-screen items-center p-8 ">
-          <ClipLoader
-            color="#000000"
-            size={100}
-            speedMultiplier={0.5}
-          />
+        <div className="flex items-center justify-center min-h-screen">
+          <ClipLoader color="#000000" size={100} speedMultiplier={0.5} />
         </div>
       ) : (
-        <section className="grid text-center justify-center h-screen items-center p-8 ">
-          <div className='border-2 border-gray-300 px-12 py-9 rounded-lg shadow-md'>
-            <h3 className='mb-2'>Sign in</h3>
-            <p className='mb-8 text-gray-600 font-normal text-[18px]'>Enter your email and password to sign in</p>
-            <form action="" className="mx-auto max-w-[24rem] text-left" onSubmit={handleSubmit}>
-              <div className='mb-6'>
-                <label className="mb-2 block font-medium text-gray-900" htmlFor="">Email</label>
+        <section className="flex items-center justify-center min-h-screen bg-gray-100 p-8">
+          <div className='bg-white p-12 rounded-lg shadow-lg w-full max-w-md'>
+            <h3 className='mb-4 text-2xl font-semibold text-gray-900'>Sign in</h3>
+            <p className='mb-6 text-gray-600'>Enter your email and password to sign in</p>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block mb-1 text-gray-700 text-sm" htmlFor="email">Email</label>
                 <input
-                  className="w-full placeholder:opacity-100 border-b-2 border-gray-300 focus:border-t-primary border-t-blue-gray-200 py-3 pl-2"
+                  className="w-full border rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   name='email'
                   type="email"
                   placeholder='name@mail.com'
-                  labelProps={{
-                    className: "hidden",
-                  }}
-                  {...formik.getFieldProps("email")} />
-              </div>
-
-              <div>
+                  {...formik.getFieldProps("email")}
+                />
                 {formik.touched.email && formik.errors.email && (
-                  <p className='text-red-500'>
-                    {formik.errors.email}
-                  </p>
+                  <p className='mt-1 text-red-500'>{formik.errors.email}</p>
                 )}
               </div>
 
-              <div className='mb-6'>
-                <label className="mb-2 block font-medium text-gray-900" htmlFor="password">Password</label>
+              <div>
+                <label className="block mb-1 text-gray-700 text-sm" htmlFor="password">Password</label>
                 <div className="relative">
                   <input
-                    className="w-full placeholder:opacity-100 border-b-2 border-gray-300 focus:border-t-primary border-t-blue-gray-200 p-2 pr-10"
-                    name='pasword'
+                    className="w-full border rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    name='password'
                     type={passwordShown ? "text" : "password"}
                     placeholder='***********'
-                    id="password"
                     {...formik.getFieldProps("password")}
                   />
-
-                  <div>
-                    {formik.touched.password && formik.errors.password && (
-                      <p className='text-red-500'>
-                        {formik.errors.password}
-                      </p>
-                    )}
-                  </div>
-
                   <button
                     onClick={togglePasswordVisiblity}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 focus:outline-none"
                   >
-                    {passwordShown ? (
-                      <EyeIcon className="h-5 w-5 text-gray-600" />
-                    ) : (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-600" />
-                    )}
+                    {passwordShown ? <EyeIcon className="h-5 w-5" /> : <EyeSlashIcon className="h-5 w-5" />}
                   </button>
                 </div>
+                {formik.touched.password && formik.errors.password && (
+                  <p className='mt-1 text-red-500'>{formik.errors.password}</p>
+                )}
               </div>
 
-
-              <button className='bg-green-700 mt-6 w-full text-white py-3 rounded-lg'>
+              <button className='w-full bg-green-500 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300'>
                 Login
               </button>
 
-              <div className='flex justify-center items-center mt-4'>
-                <Link to="/reset">
-                  Reset your password</Link>
+              <div className='text-center mt-4'>
+                <Link to="/reset" className='text-green-500 text-sm hover:underline'>Reset your password</Link>
               </div>
-              <div className='w-full justify-center items-center'>
-                <button className='h-12 flex w-full justfy-center gap-2 mt-2' onClick={signInWithGoogle}>
-                  <img src={`https://www.material-tailwind.com/logos/logo-google.png`} alt="google" className='h-6 w-6' />
-                  Sign with Google
+
+              <div className='flex justify-center items-center mt-4'>
+                <button
+                  type="button"
+                  className='flex items-center gap-2 border text-gray-400 py-2 px-4 rounded-lg hover:bg-green-100 transition duration-300'
+                  onClick={signInWithGoogle}
+                >
+                  <img src={`https://www.material-tailwind.com/logos/logo-google.png`} alt="google" className='h-5 w-5' />
+                  Sign in with Google
                 </button>
               </div>
 
-              <div className='flex justify-center mt-3'>
-                <p className='mr-2'>Don't have an account?</p>
-                <Link to="/register">
-                  Register
-                </Link>
+              <div className='text-center mt-4'>
+                <p className='text-gray-700 text-sm'>Don't have an account? <Link to="/register" className='text-green-500 text-sm hover:underline'>Register</Link></p>
               </div>
-
             </form>
           </div>
         </section>
       )}
-
     </>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

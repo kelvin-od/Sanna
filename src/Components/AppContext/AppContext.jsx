@@ -6,16 +6,10 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
+  onAuthStateChanged,
 } from "firebase/auth";
-import { auth, db, onAuthStateChanged } from "../firebase/firebase";
-import {
-  query,
-  where,
-  collection,
-  getDocs,
-  addDoc,
-  onSnapshot,
-} from "firebase/firestore";
+import { auth, db } from "../firebase/firebase";
+import { query, where, collection, getDocs, addDoc, onSnapshot } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
@@ -25,7 +19,6 @@ const AppContext = ({ children }) => {
   const provider = new GoogleAuthProvider();
   const [user, setUser] = useState();
   const [userData, setUserData] = useState();
-
   const navigate = useNavigate();
 
   const signInWithGoogle = async () => {
@@ -60,11 +53,12 @@ const AppContext = ({ children }) => {
 
   const registerWithEmailAndPassword = async (name, email, company, password) => {
     try {
-      const res = await createUserWithEmailAndPassword(auth, email, company, password);
+      const res = await createUserWithEmailAndPassword(auth, email, password);
       const user = res.user;
       await addDoc(collectionUsersRef, {
         uid: user.uid,
         name,
+        company, // Correctly store company here
         providerId: "email/password",
         email: user.email,
       });
@@ -77,7 +71,7 @@ const AppContext = ({ children }) => {
   const sendPasswordToUser = async (email) => {
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("New password send to your email");
+      alert("New password sent to your email");
     } catch (err) {
       alert(err.message);
       console.log(err.message);
@@ -86,6 +80,9 @@ const AppContext = ({ children }) => {
 
   const signOutUser = async () => {
     await signOut(auth);
+    setUser(null); // Clear user state
+    setUserData(null); // Clear userData state
+    navigate('/'); // Redirect to landing page after signout
   };
 
   const userStateChanged = async () => {
@@ -105,33 +102,33 @@ const AppContext = ({ children }) => {
 
   useEffect(() => {
     userStateChanged();
-    if (user || userData) {
-      navigate("/");
-    } else {
-      navigate("/login");
-    }
     return () => userStateChanged();
   }, []);
 
-  const initialState = {
-    signInWithGoogle: signInWithGoogle,
-    loginWithEmailAndPassword: loginWithEmailAndPassword,
-    registerWithEmailAndPassword: registerWithEmailAndPassword,
-    sendPasswordToUser: sendPasswordToUser,
-    signOutUser: signOutUser,
-    user: user,
-    userData: userData,
-  };
+  useEffect(() => {
+    if (user) {
+      navigate("/home");
+    } else {
+      navigate("/");
+    }
+  }, [user]);
 
+  const initialState = {
+    signInWithGoogle,
+    loginWithEmailAndPassword,
+    registerWithEmailAndPassword,
+    sendPasswordToUser,
+    signOutUser,
+    user,
+    userData,
+  };
 
   console.log("userdata", userData);
 
   return (
-    <div>
-      <AuthContext.Provider value={initialState}>
-        {children}
-      </AuthContext.Provider>
-    </div>
+    <AuthContext.Provider value={initialState}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 

@@ -52,7 +52,7 @@ const Navbar = () => {
     const handleSignOut = (e) => {
         e.preventDefault();
         signOutUser();
-        navigate('/login');
+        navigate('/');
     };
 
     return (
@@ -60,7 +60,7 @@ const Navbar = () => {
             <nav className='sticky top-0 bg-white-500 p-1 border-b-1 border-gray-200 shadow-md'>
                 <div className="flex items-center justify-between mx-6 mr-24">
                     <div className='text-green-700 text-2xl font-bold ml-16'>
-                        <Link to="/">Sanna</Link>
+                        <Link to="/home">Sanna</Link>
                     </div>
                     <div>
                         <input className='rounded-lg py-2 w-96 focus:outline-none bg-green-50 px-3' type="text" placeholder='Search' />
@@ -144,18 +144,7 @@ const Navbar = () => {
 
                 {isMenuOpen ? (
                     <ul className='flex-col md:hidden'>
-                        <li className='py hover:cursor-pointer hover:bg-green-100'>
-                            <Link to="/ourwork">Our Work</Link>
-                        </li>
-                        <li className='py hover:cursor-pointer hover:bg-green-100'>
-                            <Link to="/ourimpact">Our Impact</Link>
-                        </li>
-                        <li className='py hover:cursor-pointer hover:bg-green-100'>
-                            <Link to="/newsandevents">News & Events</Link>
-                        </li>
-                        <li className='py hover:cursor-pointer hover:bg-green-100'>
-                            <Link to="/becomemember">Become a Member</Link>
-                        </li>
+                        <li></li>
                     </ul>
                 ) : null}
             </nav>

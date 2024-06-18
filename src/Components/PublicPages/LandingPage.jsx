@@ -1,5 +1,6 @@
 import React from "react"
 import NavigationBar from "./NavigationBar"
+import Hero from "./Hero"
 
 
 const LandingPage = () => {
@@ -7,7 +8,7 @@ const LandingPage = () => {
     return (
         <div>
             <NavigationBar />
-            Landing Page
+            <Hero />
         </div>
     )
 };
