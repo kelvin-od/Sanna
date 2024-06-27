@@ -40,18 +40,18 @@ const Register = () => {
   const validationSchema = Yup.object({
     name: Yup.string()
       .required("Required")
-      .min(4, "Must be at least 4 characters long")
-      .matches(/^[a-zA-Z0-9@\s]+$/, "Name can only contain letters, numbers, @, and spaces"),
+      .min(4, "Must be at least 4 characters long"),
     email: Yup.string().email("Invalid email address").required("Required"),
     company: Yup.string()
       .required("Required")
-      .min(4, "Must be at least 4 characters long")
-      .matches(/^[a-zA-Z0-9@\s]+$/, "Company name can only contain letters, numbers, @, and spaces"),
+      .min(4, "Must be at least 4 characters long"),
     password: Yup.string()
       .required("Required")
       .min(6, "Must be at least 6 characters long")
-      .matches(/^[a-zA-Z0-9@\s]+$/, "Password can only contain letters, numbers, @, and spaces"),
+      .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, "Password must contain at least one letter, one number, and one special character"),
   });
+  
+  
 
   const handleRegister = (e) => {
     e.preventDefault();

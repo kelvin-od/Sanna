@@ -156,8 +156,8 @@ const Notification = () => {
         </div>
 
         {newPosts.length > 0 && (
-          <div className="border-b py-4">
-            <p className="text-lg font-bold">New Posts:</p>
+          <div className="border-b py-2">
+            <p className="text-sm font-bold">New Posts:</p>
             <ul>
               {newPosts.map(post => (
                 <li key={post.id}>
@@ -170,7 +170,7 @@ const Notification = () => {
         )}
 
         <div className="py-4">
-          <h2 className="text-lg font-bold mb-2">Unread Notifications</h2>
+          <h2 className="text-sm font-bold mb-2">Unread Notifications</h2>
           {filteredNotifications.length > 0 ? (
             <ul>
               {visibleNotifications.map(notification => (
@@ -183,7 +183,7 @@ const Notification = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs pb-1 text-gray-600">{getTimeDifference(notification.timestamp)}</p>
-                      <p className="text-lg">{notification.message}</p>
+                      <p className="text-xs">{notification.message}</p>
                     </div>
                     <button
                       className="text-gray-500 hover:text-gray-700 focus:outline-none"

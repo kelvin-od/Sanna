@@ -11,6 +11,7 @@ import Profile from "./Profile"
 import Post from "../Posts/Post"
 import CrossSell from "./CrossSell"
 import LandingPage from "../PublicPages/LandingPage";
+import Accounts from "./Accounts"
 
 const Pages = () => {
   return (
@@ -27,6 +28,7 @@ const Pages = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/post/:postId" element={<Post />} />
         <Route path="/cross-sell" element={<CrossSell />} />
+        <Route path="/accounts" element={<Accounts />} />
       </Routes>
     </div>
   );

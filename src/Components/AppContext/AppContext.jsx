@@ -7,6 +7,7 @@ import {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { query, where, collection, getDocs, addDoc, onSnapshot } from "firebase/firestore";
@@ -44,7 +45,15 @@ const AppContext = ({ children }) => {
 
   const loginWithEmailAndPassword = async (email, password) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        await signOut(auth);
+        alert("Please verify your email before logging in.");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       alert(err.message);
       console.log(err.message);
@@ -55,13 +64,21 @@ const AppContext = ({ children }) => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       const user = res.user;
+
+      // Send email verification
+      await sendEmailVerification(user);
+
+      // Store user information in Firestore
       await addDoc(collectionUsersRef, {
         uid: user.uid,
         name,
-        company, // Correctly store company here
+        company,
         providerId: "email/password",
         email: user.email,
+        emailVerified: user.emailVerified,
       });
+
+      alert("Registration successful! Please verify your email before logging in.");
     } catch (err) {
       alert(err.message);
       console.log(err.message);
@@ -88,6 +105,13 @@ const AppContext = ({ children }) => {
   const userStateChanged = async () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        if (!user.emailVerified) {
+          alert("Please verify your email.");
+          await signOut(auth);
+          navigate("/login");
+          return;
+        }
+
         const q = query(collectionUsersRef, where("uid", "==", user?.uid));
         await onSnapshot(q, (doc) => {
           setUserData(doc?.docs[0]?.data());
@@ -107,7 +131,11 @@ const AppContext = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      navigate("/home");
+      if (user.emailVerified) {
+        navigate("/home");
+      } else {
+        navigate("/login");
+      }
     } else {
       navigate("/");
     }

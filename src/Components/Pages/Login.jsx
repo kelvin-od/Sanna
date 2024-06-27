@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import ClipLoader from "react-spinners/ClipLoader";
 import { AuthContext } from "../AppContext/AppContext";
 import { auth, onAuthStateChanged } from "../firebase/firebase";
-import Farming from "../../Assets/Images/heroimage.jpeg"
+import Header from "../../Assets/Images/header.avif"
 
 const Login = () => {
   const { signInWithGoogle, loginWithEmailAndPassword } = useContext(AuthContext);
@@ -41,9 +41,10 @@ const Login = () => {
     email: Yup.string().email("Invalid email address").required("Required"),
     password: Yup.string()
       .required("Required")
-      .min("6", "Must be at least 6 characters long")
-      .matches(/^[a-zA-Z]+$/, "Password can only contain letters"),
+      .min(6, "Must be at least 6 characters long")
+      .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, "Password must contain at least one letter, one number, and one special character"),
   });
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -68,21 +69,20 @@ const Login = () => {
           <ClipLoader color="#000000" size={100} speedMultiplier={0.5} />
         </div>
       ) : (
-        <section className="flex items-center justify-center min-h-screen bg-gray-100">
+        <section className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-white p-6">
+          <div className="hidden md:flex w-1/2 h-screen justify-end">
+            <img className="object-cover w-full h-full" src={Header} alt="Header" />
+          </div>
 
-          
-            <img className="h-screen w-[50%] mr-24" src={Farming} alt="" />
-          
-
-          <div className=" w-[50%]">
-            <div className='bg-white p-12 rounded-lg shadow-lg w-full max-w-md'>
-              <h3 className='mb-4 text-2xl font-semibold text-gray-900'>Sign in</h3>
-              <p className='mb-6 text-gray-600'>Enter your email and password to sign in</p>
+          <div className="flex flex-col items-center w-full md:w-1/2">
+            <p className="text-green-500 font-bold mb-5 text-lg md:text-base">Sanna</p>
+            <div className='px-6 py-8 md:px-12 md:py-8 rounded-lg border shadow bg-white w-full max-w-md'>
+              <p className="text-sm md:text-base mb-4">Please Sign in to Network, learn, and Cross-Sell</p>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block mb-1 text-gray-700 text-sm" htmlFor="email">Email</label>
+                  <label className="block mb-1 text-gray-700 text-sm md:text-base" htmlFor="email">Email</label>
                   <input
-                    className="w-full border rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border rounded px-4 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                     name='email'
                     type="email"
                     placeholder='name@mail.com'
@@ -94,10 +94,10 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1 text-gray-700 text-sm" htmlFor="password">Password</label>
+                  <label className="block mb-1 text-gray-700 text-sm md:text-base" htmlFor="password">Password</label>
                   <div className="relative">
                     <input
-                      className="w-full border rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-4 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                       name='password'
                       type={passwordShown ? "text" : "password"}
                       placeholder='***********'
@@ -119,14 +119,14 @@ const Login = () => {
                   Login
                 </button>
 
-                <div className='text-center mt-4'>
+                <div className='text-center mt-2'>
                   <Link to="/reset" className='text-green-500 text-sm hover:underline'>Reset your password</Link>
                 </div>
 
-                <div className='flex justify-center items-center mt-4'>
+                <div className='flex justify-center items-center mt-2'>
                   <button
                     type="button"
-                    className='flex items-center gap-2 border text-gray-400 py-2 px-4 rounded-lg hover:bg-green-100 transition duration-300'
+                    className='flex items-center gap-2 border text-gray-400 text-sm py-2 px-4 rounded-lg hover:bg-green-100 transition duration-300'
                     onClick={signInWithGoogle}
                   >
                     <img src={`https://www.material-tailwind.com/logos/logo-google.png`} alt="google" className='h-5 w-5' />
@@ -140,7 +140,6 @@ const Login = () => {
               </form>
             </div>
           </div>
-
         </section>
       )}
     </>
