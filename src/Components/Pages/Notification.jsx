@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
+// import Footer from '../Footer/Footer';
 import { AuthContext } from '../AppContext/AppContext';
 import { collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
@@ -12,7 +12,9 @@ const Notification = () => {
   const [newPosts, setNewPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
   const [menuVisible, setMenuVisible] = useState({});
-  const [showCount, setShowCount] = useState(8);
+  const [showCount, setShowCount] = useState(5); // Show only 5 notifications initially
+  const [page, setPage] = useState(1); // Track current page
+
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -46,7 +48,7 @@ const Notification = () => {
         const post = change.doc.data();
         return {
           id: change.doc.id,
-          message: 'New post from a user',
+          title: 'New post from a user',
           timestamp: new Date(),
           post: post
         };
@@ -125,10 +127,22 @@ const Notification = () => {
     ? notifications
     : notifications.filter(notification => notification.type === 'comment' || notification.type === 'like');
 
-  const visibleNotifications = filteredNotifications.slice(0, showCount);
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredNotifications.length / showCount);
+  const startIndex = (page - 1) * showCount;
+  const endIndex = startIndex + showCount;
+  const visibleNotifications = filteredNotifications.slice(startIndex, endIndex);
 
-  const handleLoadMore = () => {
-    setShowCount(prevCount => prevCount + 8);
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(prevPage => prevPage - 1);
+    }
   };
 
   return (
@@ -137,8 +151,8 @@ const Notification = () => {
         <Navbar />
       </div>
 
-      <div className="flex-grow flex flex-col mt-24 mb-16 w-full max-w-4xl mx-auto px-4 bg-white">
-        <h1 className="text-2xl font-medium pt-4 mb-4">Notifications</h1>
+      <div className="flex-grow flex flex-col mt-24 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
+        <h1 className="text-2xl font-medium mb-2">Notifications</h1>
 
         <div className="flex justify-center space-x-4 mb-4 border-b border-gray-300">
           <button
@@ -155,23 +169,10 @@ const Notification = () => {
           </button>
         </div>
 
-        {newPosts.length > 0 && (
-          <div className="border-b py-2">
-            <p className="text-sm font-bold">New Posts:</p>
-            <ul>
-              {newPosts.map(post => (
-                <li key={post.id}>
-                  <p>{post.title}</p>
-                  {/* Add more details here if needed, such as post content or author */}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         <div className="py-4">
-          <h2 className="text-sm font-bold mb-2">Unread Notifications</h2>
-          {filteredNotifications.length > 0 ? (
+          <h2 className="text-sm font-bold mb-2">All Notifications</h2>
+          {visibleNotifications.length > 0 ? (
             <ul>
               {visibleNotifications.map(notification => (
                 <li
@@ -232,22 +233,32 @@ const Notification = () => {
           ) : (
             <p>No notifications available</p>
           )}
-          {filteredNotifications.length > showCount && (
-            <div className="text-center mt-4">
+
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-between mt-4">
               <button
-                className="px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none"
-                onClick={handleLoadMore}
+                className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handlePrevPage}
+                disabled={page === 1}
               >
-                Load More
+                {'< Previous'}
+              </button>
+              <button
+                className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+              >
+                {'Next >'}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      <div className="w-full bg-white shadow-md mt-4">
+      {/* <div className="w-full bg-white shadow-md mt-4">
         <Footer />
-      </div>
+      </div> */}
     </div>
   );
 };

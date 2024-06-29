@@ -5,6 +5,8 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
     const [isWithdrawOpen, setWithdrawOpen] = useState(false);
     const [depositAmount, setDepositAmount] = useState('');
     const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [showCount, setShowCount] = useState(3); // Show only 4 notifications initially
+    const [page, setPage] = useState(1); // Track current page
 
     const handleConfirmClick = (transaction) => {
         handleConfirmReceipt(transaction.id, transaction.escrowTransactionId);
@@ -32,12 +34,31 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
         setWithdrawAmount('');
     };
 
+    // Pagination logic
+    const filteredNotifications = transactions; // Replace with actual filtering logic if needed
+    const totalPages = Math.ceil(filteredNotifications.length / showCount);
+    const startIndex = (page - 1) * showCount;
+    const endIndex = startIndex + showCount;
+    const visibleNotifications = filteredNotifications.slice(startIndex, endIndex);
+
+    const handleNextPage = () => {
+        if (page < totalPages) {
+            setPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) {
+            setPage(prevPage => prevPage - 1);
+        }
+    };
+
     return (
         <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-[70%]">
             <h2 className="text-2xl font-bold mb-4">Account Balance: {balance !== null ? `KSh ${balance.toFixed(2)}` : 'Loading...'}</h2>
             <div className="divide-y divide-gray-200">
                 <p className="text-gray-700 font-medium text-sm mb-2">Your Products/Goods on Transits:</p>
-                {transactions.map((transaction) => (
+                {visibleNotifications.map((transaction) => ( // Use visibleNotifications instead of transactions
                     <div key={transaction.id} className="py-3 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-medium">Product: {transaction.productDetails.name}</p>
@@ -92,6 +113,26 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
                         />
                         <button className="bg-green-500 text-sm text-white py-1 px-4 rounded ml-2" onClick={confirmWithdraw}>
                             Confirm
+                        </button>
+                    </div>
+                )}
+
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                    <div className="flex justify-between mt-4">
+                        <button
+                            className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handlePrevPage}
+                            disabled={page === 1}
+                        >
+                            {'< Previous'}
+                        </button>
+                        <button
+                            className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handleNextPage}
+                            disabled={page === totalPages}
+                        >
+                            {'Next >'}
                         </button>
                     </div>
                 )}

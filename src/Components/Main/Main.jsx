@@ -167,9 +167,12 @@ const defaultImage = 'path/to/default/image.png';
     fetchAdvertPosts();
   }, []);
 
-  const combinedPosts = [...state.posts, ...advertPosts].sort(
-    (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
-  );
+  const combinedPosts = [...state.posts, ...advertPosts].sort((a, b) => {
+    if (!a.timestamp) return 1; // Move posts with null timestamp to the end
+    if (!b.timestamp) return -1;
+    return b.timestamp.toDate() - a.timestamp.toDate();
+  });
+  
 
   return (
     <div className='flex flex-col items-center bg-white'>
@@ -277,7 +280,7 @@ const defaultImage = 'path/to/default/image.png';
                       email={post?.email}
                       image={post?.image}
                       text={post?.text}
-                      timestamp={new Date(post?.timestamp?.toDate()).toUTCString()}
+                      timestamp={post?.timestamp ? new Date(post.timestamp.toDate()).toUTCString() : 'No timestamp'}
                     />
                   );
                 }
