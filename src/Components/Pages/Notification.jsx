@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
-// import Footer from '../Footer/Footer';
 import { AuthContext } from '../AppContext/AppContext';
 import { collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
@@ -32,6 +31,8 @@ const Notification = () => {
             timestamp: data.timestamp.toDate()
           };
         });
+        // Sort notifications by timestamp in descending order
+        notificationsData.sort((a, b) => b.timestamp - a.timestamp);
         setNotifications(notificationsData);
       });
 
@@ -147,11 +148,8 @@ const Notification = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="fixed top-0 z-10 w-full bg-white shadow-md">
-        <Navbar />
-      </div>
-
-      <div className="flex-grow flex flex-col mt-24 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
+      <Navbar /> {/* Ensure Navbar is rendered at the bottom */}
+      <div className="flex-grow flex flex-col mt-10 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
         <h1 className="text-2xl font-medium mb-2">Notifications</h1>
 
         <div className="flex justify-center space-x-4 mb-4 border-b border-gray-300">
@@ -168,7 +166,6 @@ const Notification = () => {
             My Posts
           </button>
         </div>
-
 
         <div className="py-4">
           <h2 className="text-sm font-bold mb-2">All Notifications</h2>
@@ -197,7 +194,7 @@ const Notification = () => {
                     </button>
                   </div>
                   {menuVisible[notification.id] && (
-                    <div ref={menuRef} className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 shadow-md z-20">
+                    <div ref={menuRef} className="absolute right-0 mt-2 w-48 rounded bg-green-100 border border-gray-300 shadow-md z-20">
                       <button
                         className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 focus:outline-none"
                         onClick={() => {
@@ -255,10 +252,6 @@ const Notification = () => {
           )}
         </div>
       </div>
-
-      {/* <div className="w-full bg-white shadow-md mt-4">
-        <Footer />
-      </div> */}
     </div>
   );
 };

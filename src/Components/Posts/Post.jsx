@@ -51,8 +51,8 @@ const Post = () => {
                 <Navbar />
             </div>
 
-            <div className='flex mx-24'>
-                <div className='flex-col py-4 flex flex-col mt-24 mb-16 w-[60%] mx-auto px-4'>
+            <div className='flex w-full mx-24'>
+                <div className='flex-col py-4 flex flex-col mt-24 mb-16 w-[40%] mx-auto px-4'>
                     {loading ? ( // Render loading spinner only when loading state is true
                         <div className=" flex absolute justify-center items-center">
                             <div className="loader"></div>

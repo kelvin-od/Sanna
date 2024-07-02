@@ -21,6 +21,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CommentSection from "./CommentSection";
+import { formatDistanceToNow } from 'date-fns'; // Import the function
 
 const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
   const { user } = useContext(AuthContext);
@@ -141,6 +142,20 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
     getComments();
   }, [id, ADD_LIKE, ADD_COMMENT, HANDLE_ERROR]);
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+  
+    let date;
+    // Check if timestamp is a Firestore Timestamp object
+    if (timestamp.toDate) {
+      date = timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
+    } else {
+      date = new Date(timestamp); // Convert Unix timestamp or date string to JavaScript Date object
+    }
+  
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
+
   return (
     <div className="mb-4 justify-center mx-8">
       <div className="flex flex-col py-4 bg-white border border-gray-300 rounded-md w-full shadow-lg">
@@ -151,7 +166,7 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
               {email}
             </p>
             <p className="ml-4 font-roboto w-full font-normal text-xs text-gray-500 no-underline tracking-normal leading-none">
-              Published: {timestamp}
+              Published: {formatTimestamp(timestamp)}
             </p>
           </div>
           {user?.uid !== uid && (
@@ -169,12 +184,15 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
           <p className="ml-4 pb-4 font-roboto font-normal text-black text-xs pr-3 leading-normal">
             {text}
           </p>
-          {image && (<img className="h-auto w-full" src={image} alt="postImage" />)}
+          {image && (<img className="h-auto w-full" src={image} alt="userpost" />)}
         </div>
-        <div className="flex justify-around pb-1 items-center border-t">
-          <button className="flex items-center cursor-pointer rounded-lg pt-2 hover:bg-gray-100" onClick={handleLike}>
+        <div className="flex items-center justify-around w-full border-t border-gray-300">
+          <button
+            className="flex items-center cursor-pointer rounded-lg pt-2 hover:bg-gray-100"
+            onClick={handleLike}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 fill-gray-700 hover:fill-gray-500">
-              <path fillRule="evenodd" d="M12 4.879l-.94-.94c-1.738-1.737-4.64-1.737-6.378 0A4.5 4.5 0 0 0 2.44 9.44L12 19l9.56-9.56a4.5 4.5 0 0 0-6.378-6.378L12 4.878ZM4.56 3.56c2.32-2.32 6.08-2.32 8.4 0l.94.94.94-.94c2.32-2.32 6.08-2.32 8.4 0 2.32 2.32 2.32 6.08 0 8.4l-9.56 9.56a1.5 1.5 0 0 1-2.12 0L4.56 11.96c-2.32-2.32-2.32-6.08 0-8.4Z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M4.56 3.56c2.32-2.32 6.08-2.32 8.4 0l.94.94.94-.94c2.32-2.32 6.08-2.32 8.4 0 2.32 2.32 2.32 6.08 0 8.4l-9.56 9.56a1.5 1.5 0 0 1-2.12 0L4.56 11.96c-2.32-2.32-2.32-6.08 0-8.4Z" clipRule="evenodd" />
             </svg>
             <span className="ml-2 text-xs font-roboto text-black">{state.likes.length}</span>
             <span className="text-xs font-normal ml-1">Like</span>

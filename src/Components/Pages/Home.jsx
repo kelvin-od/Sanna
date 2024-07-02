@@ -11,18 +11,18 @@ const Home = () => {
       <div className="fixed top-0 z-10 w-full bg-white">
         <Navbar />
       </div>
-      <div className='flex pt-24'> {/* Added pt-24 to account for fixed Navbar height */}
-        <div className='flex-auto w-[17%] fixed top-24 ml-12 '>
+      <div className='flex flex-col lg:flex-row pt-24'>
+        <div className='w-full lg:w-[17%] lg:fixed top-24 lg:ml-24'>
           <Leftside />
         </div>
-        <div className='flex-auto w-[35%] ml-[20%] rounded-xl'>
+        <div className='w-full lg:w-[45%] lg:ml-[25%] rounded-xl mt-4 lg:mt-0'>
           <Main />
         </div>
-        <div className='flex-auto w-[20%] ml-4 mr-24'>
+        <div className='w-full lg:w-[21%] lg:ml-4 lg:mr-4 mt-4 lg:mt-0'>
           <div className='relative'>
             <Rightside />
           </div>
-          <div className='sticky top-20'>
+          <div className='sticky top-20 mt-4 lg:mt-0'>
             <Ads />
           </div>
         </div>

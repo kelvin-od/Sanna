@@ -108,7 +108,6 @@ const Messaging = () => {
         }
     };
 
-
     const handleUserClick = (user) => {
         setSelectedUser(user);
     };
@@ -139,8 +138,8 @@ const Messaging = () => {
             <div className="fixed top-0 z-10 w-full bg-white shadow-md">
                 <Navbar />
             </div>
-            <div className="flex flex-1 mt-16 p-4">
-                <div className="w-1/4 p-4 border-r">
+            <div className="flex flex-1 mt-16 p-4 flex-col md:flex-row">
+                <div className="md:w-1/4 p-4 border-r md:border-r-0 md:border-b">
                     <h2 className="font-medium mb-4 text-sm">Conversations</h2>
                     {conversations.map((convo) => (
                         <div
@@ -156,8 +155,8 @@ const Messaging = () => {
                     {selectedUser ? (
                         <div className="flex flex-col h-full">
                             <h2 className="font-medium mb-4 text-sm">Conversation with {selectedUser.name}</h2>
-                            <div className="flex-1 border p-4 mb-4 overflow-y-auto w-[60%]">
-                                <div style={{ minHeight: '300px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+                            <div className="flex-1 border p-4 mb-4 overflow-y-auto w-full md:w-[60%] shadow-lg rounded-lg">
+                                <div className="custom-scrollbar" style={{ minHeight: '300px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
                                     {messages.map((msg) => (
                                         <div key={msg.id} className="mb-2 flex flex-col pr-5">
                                             <div className={`p-1 text-sm rounded inline-block mb-2 ${msg.senderId === user.uid ? 'bg-green-100 self-end' : 'bg-gray-200 self-start'}`}>
@@ -174,7 +173,8 @@ const Messaging = () => {
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex w-[60%]">
+
+                            <div className="flex w-full md:w-[60%]">
                                 <textarea
                                     className="flex-1 border p-1 rounded text-sm"
                                     rows="1"
