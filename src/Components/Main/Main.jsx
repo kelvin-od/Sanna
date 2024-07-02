@@ -165,7 +165,7 @@ const defaultImage = 'path/to/default/image.png';
       });
     };
     fetchAdvertPosts();
-  }, []);
+  }, [advertsCollectionRef]);
 
   const combinedPosts = [...state.posts, ...advertPosts].sort(
     (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
