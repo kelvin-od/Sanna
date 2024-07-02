@@ -165,22 +165,25 @@ const defaultImage = 'path/to/default/image.png';
       });
     };
     fetchAdvertPosts();
-  }, [advertsCollectionRef]);
+  }, []);
 
-  const combinedPosts = [...state.posts, ...advertPosts].sort(
-    (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
-  );
+  const combinedPosts = [...state.posts, ...advertPosts].sort((a, b) => {
+    if (!a.timestamp) return 1; // Move posts with null timestamp to the end
+    if (!b.timestamp) return -1;
+    return b.timestamp.toDate() - a.timestamp.toDate();
+  });
+  
 
   return (
-    <div className='flex flex-col items-center bg-white sm:flex-row'>
-      <div className='flex flex-col py-4 bg-white w-[90%] rounded-lg border border-gray-400'>
-        <div className='flex items-center border-b border-gray-300 pb-4 pl-4 w-full '>
+    <div className='flex flex-col items-center bg-white'>
+      <div className='flex flex-col py-4 bg-white w-[90%] rounded-lg border border-gray-300'>
+        <div className='flex items-center border-b border-gray-200 pb-4 pl-4 w-full '>
           <img sizes='sm' className='w-[2rem] rounded-full' variant="circular" src={user?.photoURL || avatar} alt="avatar" />
           <form className='w-full' action="" onSubmit={handleSubmitPost}>
             <div className='flex justify-between items-center'>
               <div className='w-full ml-4 '>
                 <input
-                  className='outline-none w-full bg-white rounded-md font-normal text-sm'
+                  className='outline-none w-full bg-white border border-gray-200 rounded-md font-normal text-sm'
                   type="text"
                   name='text'
                   placeholder={`What are you Cross-selling today? ${user?.displayName?.split(" ")[0] ||
@@ -277,7 +280,7 @@ const defaultImage = 'path/to/default/image.png';
                       email={post?.email}
                       image={post?.image}
                       text={post?.text}
-                      timestamp={new Date(post?.timestamp?.toDate()).toUTCString()}
+                      timestamp={post?.timestamp ? new Date(post.timestamp.toDate()).toUTCString() : 'No timestamp'}
                     />
                   );
                 }

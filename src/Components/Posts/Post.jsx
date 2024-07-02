@@ -43,41 +43,41 @@ const Post = () => {
         fetchPost();
     }, [postId]);
 
+    const defaultLogo = 'path/to/default/logo.png'; // Provide the path to your default logo
+
     return (
         <div className="flex flex-col h-screen items-center">
             <div className="fixed top-0 z-10 w-full bg-white shadow-md">
                 <Navbar />
             </div>
 
-            <div className='flex mx-24'>
-
-                <div className='flex-col py-4 flex flex-col mt-24 mb-16 w-[60%] mx-auto px-4'>
+            <div className='flex w-full mx-24'>
+                <div className='flex-col py-4 flex flex-col mt-24 mb-16 w-[40%] mx-auto px-4'>
                     {loading ? ( // Render loading spinner only when loading state is true
                         <div className=" flex absolute justify-center items-center">
                             <div className="loader"></div>
                             <div>Loading...</div>
                         </div>
                     ) : (
-                        <PostCard
-                            logo={post.logo}
-                            id={post.documentId}
-                            uid={post.uid}
-                            name={post.name}
-                            email={post.email}
-                            image={post.image}
-                            text={post.text}
-                            timestamp={new Date(post.timestamp.toDate()).toUTCString()}
-                        />
+                        post ? (
+                            <PostCard
+                                logo={post.logo || defaultLogo} // Use default logo if post.logo is null or undefined
+                                id={post.documentId}
+                                uid={post.uid}
+                                name={post.name}
+                                email={post.email}
+                                image={post.image}
+                                text={post.text}
+                                timestamp={new Date(post.timestamp.toDate()).toUTCString()}
+                            />
+                        ) : (
+                            <div className="text-center">Post not found</div>
+                        )
                     )}
                 </div>
 
-                <div className='w-[40%]'>
-
-                </div>
-
+                <div className='w-[40%]'></div>
             </div>
-
-
 
             <div className="fixed bottom-0 z-10 w-full bg-white shadow-md">
                 <Footer />

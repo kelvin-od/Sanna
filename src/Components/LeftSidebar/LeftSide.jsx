@@ -10,13 +10,11 @@ const Leftside = ({ profilePicture }) => {
   const profilePictureUrl = profilePicture || avatar;
 
   return (
-    <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-lg'>
+    <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-lg lg:w-full md:w-1/2 sm:w-full'>
       <div className='flex flex-col items-center relative'>
-        <img className='h-35 w-full rounded-t-md' src={edu} alt="edu" />
-        <div className='absolute -bottom-6'>
-          <div>
-            <img className='size-md rounded-full h-12 w-12' src={user?.photoURL || avatar} alt="avatar" />
-          </div>
+        <img className='h-20 sm:h-35 w-full rounded-t-md' src={edu} alt="edu" />
+        <div className='absolute -bottom-8'>
+          <img className='rounded-full h-16 w-16' src={user?.photoURL || avatar} alt="avatar" />
         </div>
       </div>
       <div className='flex flex-col items-center pt-12'>
@@ -26,12 +24,9 @@ const Leftside = ({ profilePicture }) => {
         <p className='font-roboto text-sm text-gray-600 no-underline tracking-normal leading-none py-2'>
           {user?.company || userData?.company}
         </p>
-        <p className='text-xs text-gray-600 no-underline tracking-normal leading-none mx-4'>
+        <p className='text-xs text-gray-600 no-underline tracking-normal leading-none mx-4 text-center'>
           Description of the company - Lorem ipsum dolor sit amet consectetur adipisicing elit.
         </p>
-      </div>
-      <div className='flex items-center'>
-        <img src="" alt="" />
       </div>
     </div>
   );

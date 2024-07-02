@@ -12,10 +12,10 @@ const NavigationBar = () => {
   return (
     <nav className='sticky top-0 bg-white py-2 border-b border-gray-200 shadow-md h-16 flex items-center justify-between'>
       <div className="flex items-center justify-between w-full px-4 md:px-6">
-        <div className='text-green-700 text-2xl font-bold'>
+        <div className='text-green-700 text-2xl font-bold ml-16'>
           <Link to="/">Sanna</Link>
         </div>
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center mr-24">
           <ul className="flex space-x-4">
             <li>
               <Link to="/login" className='flex items-center text-white hover:text-black px-6 py-2 bg-green-500 hover:bg-white hover:cursor-pointer rounded border hover:border-green-500'>

@@ -17,5 +17,28 @@ module.exports = withMT({
       // You can add more custom sizes as needed
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.custom-scrollbar::-webkit-scrollbar': {
+          width: '12px',
+        },
+        '.custom-scrollbar::-webkit-scrollbar-track': {
+          background: '#f1f1f1',
+          'border-radius': '10px',
+        },
+        '.custom-scrollbar::-webkit-scrollbar-thumb': {
+          'background-color': '#888',
+          'border-radius': '10px',
+          'border': '3px solid #f1f1f1',
+        },
+        '.custom-scrollbar::-webkit-scrollbar-thumb:hover': {
+          background: '#555',
+        },
+      };
+
+      addUtilities(newUtilities, ['responsive', 'hover']);
+    },
+  ],
 });
