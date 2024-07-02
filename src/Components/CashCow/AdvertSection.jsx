@@ -75,34 +75,34 @@ const AdvertSection = () => {
 
     const addPost = async (text, imageUrl) => {
         try {
-          await addDoc(collection(db, "adverts"), {
-            uid: user.uid,
-            text,
-            image: imageUrl,
-            retailPrice,
-            crossSalePrice,
-            expiryDate,
-            location,
-            businessName,
-            timestamp: serverTimestamp(),
-          });
-          // Clear form fields after successful post
-          textRef.current.value = "";
-          setImage(null);
-          setFileName("");
-          setRetailPrice("");
-          setCrossSalePrice("");
-          setExpiryDate("");
-          setLocation("");
-          setBusinessName("");
-          setProgressBar(0);
-          alert("Post created successfully");
+            await addDoc(collection(db, "adverts"), {
+                uid: user.uid,
+                text,
+                image: imageUrl,
+                retailPrice,
+                crossSalePrice,
+                expiryDate,
+                location,
+                businessName,
+                timestamp: serverTimestamp(),
+            });
+            // Clear form fields after successful post
+            textRef.current.value = "";
+            setImage(null);
+            setFileName("");
+            setRetailPrice("");
+            setCrossSalePrice("");
+            setExpiryDate("");
+            setLocation("");
+            setBusinessName("");
+            setProgressBar(0);
+            alert("Post created successfully");
         } catch (err) {
-          console.error("Error creating post: ", err);
-          alert("Error creating post");
+            console.error("Error creating post: ", err);
+            alert("Error creating post");
         }
-      };
-      
+    };
+
 
     const calculateExpiryDays = () => {
         if (!expiryDate) return "";
@@ -121,8 +121,12 @@ const AdvertSection = () => {
 
     return (
         <div className="mt-16 flex flex-col">
+            
             <form onSubmit={handleSubmit} className="new-post-form rounded-lg border border-gray-300 shadow-lg bg-white p-4 flex flex-col py-8">
-                <div className="w-full">
+            <div className="mb-2 text-xs text-gray-500">
+                <p>Do you have products that are soon expiring, sell them off by filling this form </p>
+            </div>
+            <div className="w-full flex">
                     <textarea
                         className="outline-none w-full bg-white rounded-md font-normal text-sm border border-gray-300 p-2"
                         type="text"
@@ -149,7 +153,7 @@ const AdvertSection = () => {
                             <input id="upload" type="file" style={{ display: 'none' }} onChange={handleImageChange} />
                         </label>
                     </div>
-                        {file && (<button onClick={submitImage}>Upload</button>)}
+                    {file && (<button onClick={submitImage}>Upload</button>)}
                 </div>
 
 

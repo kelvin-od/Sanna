@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { collection, query, where, onSnapshot, getDocs, addDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot, getDocs, addDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
 import { AuthContext } from "../AppContext/AppContext";
 import Navbar from '../Navbar/Navbar';
@@ -25,9 +25,6 @@ const Messaging = () => {
                     if (message.senderId !== user.uid) {
                         uniqueUsers.add(message.senderId);
                     }
-                    if (message.receiverId !== user.uid) {
-                        uniqueUsers.add(message.receiverId);
-                    }
                 });
 
                 const convos = [];
@@ -46,40 +43,46 @@ const Messaging = () => {
     }, [user]);
 
     useEffect(() => {
-        if (selectedUser) {
-            const q = query(
-                collection(db, "messages"),
-                orderBy("timestamp"),
-                where("senderId", "in", [user.uid, selectedUser.uid]),
-                where("receiverId", "in", [user.uid, selectedUser.uid])
-            );
+        const fetchMessages = async () => {
+            if (selectedUser) {
+                const q = query(
+                    collection(db, "messages"),
+                    where("senderId", "in", [user.uid, selectedUser.uid]),
+                    where("receiverId", "in", [user.uid, selectedUser.uid])
+                );
 
-            const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-                const msgs = [];
-                for (const doc of querySnapshot.docs) {
-                    const message = doc.data();
-                    const messageObj = {
-                        id: doc.id,
-                        ...message,
-                        replies: []
-                    };
+                const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+                    const msgs = [];
+                    for (const doc of querySnapshot.docs) {
+                        const message = doc.data();
+                        const messageObj = {
+                            id: doc.id,
+                            ...message,
+                            replies: []
+                        };
 
-                    // Fetch replies for each message
-                    const repliesRef = collection(db, "messages", doc.id, "replies");
-                    const repliesSnapshot = await getDocs(repliesRef);
-                    const replies = repliesSnapshot.docs.map(replyDoc => ({
-                        id: replyDoc.id,
-                        ...replyDoc.data()
-                    }));
-                    messageObj.replies = replies;
-                    msgs.push(messageObj);
-                }
+                        // Fetch replies for each message only once
+                        const repliesRef = collection(db, "messages", doc.id, "replies");
+                        const repliesSnapshot = await getDocs(repliesRef);
+                        const replies = repliesSnapshot.docs.map(replyDoc => ({
+                            id: replyDoc.id,
+                            ...replyDoc.data()
+                        }));
+                        messageObj.replies = replies;
+                        msgs.push(messageObj);
+                    }
 
-                setMessages(msgs);
-            });
+                    // Sort messages by timestamp in ascending order
+                    msgs.sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate());
 
-            return () => unsubscribe();
-        }
+                    setMessages(msgs);
+                });
+
+                return () => unsubscribe();
+            }
+        };
+
+        fetchMessages();
     }, [selectedUser, user]);
 
     const sendMessage = async () => {
@@ -94,12 +97,12 @@ const Messaging = () => {
 
         try {
             const docRef = await addDoc(collection(db, "messages"), messageData);
-            await addDoc(collection(db, "messages", docRef.id, "replies"), {
-                senderId: user.uid,
-                text: newMessage,
-                timestamp: new Date()
-            });
+            const messageId = docRef.id; // Get the automatically generated ID
             setNewMessage("");
+
+            // Optionally, you can update state to immediately show the message
+            const messageWithId = { id: messageId, ...messageData, replies: [] };
+            setMessages([messageWithId, ...messages]);
         } catch (error) {
             console.error("Error sending message: ", error);
         }
@@ -109,13 +112,34 @@ const Messaging = () => {
         setSelectedUser(user);
     };
 
+    const handleResponse = async (messageId, responseText) => {
+        const response = {
+            senderId: user.uid,
+            text: responseText,
+            timestamp: new Date()
+        };
+
+        try {
+            await addDoc(collection(db, "messages", messageId, "replies"), response);
+        } catch (error) {
+            console.error("Error sending response: ", error);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
     return (
         <div className="flex flex-col h-screen">
             <div className="fixed top-0 z-10 w-full bg-white shadow-md">
                 <Navbar />
             </div>
-            <div className="flex flex-1 mt-16 p-4">
-                <div className="w-1/4 p-4 border-r">
+            <div className="flex flex-1 mt-16 p-4 flex-col md:flex-row">
+                <div className="md:w-1/4 p-4 border-r md:border-r-0 md:border-b">
                     <h2 className="font-medium mb-4 text-sm">Conversations</h2>
                     {conversations.map((convo) => (
                         <div
@@ -129,27 +153,35 @@ const Messaging = () => {
                 </div>
                 <div className="flex-1 p-4">
                     {selectedUser ? (
-                        <div>
+                        <div className="flex flex-col h-full">
                             <h2 className="font-medium mb-4 text-sm">Conversation with {selectedUser.name}</h2>
-                            <div className="border p-4 mb-4 h-40 overflow-y-scroll">
-                                {messages.map((msg) => (
-                                    <div key={msg.id} className={`mb-2 ${msg.senderId === user.uid ? 'text-right' : 'text-left'}`}>
-                                        <p className="bg-gray-200 p-1 text-sm rounded inline-block">{msg.text}</p>
-                                        {msg.replies && msg.replies.map((reply) => (
-                                            <div key={reply.id} className={`ml-4 mb-2 ${reply.senderId === user.uid ? 'text-right' : 'text-left'}`}>
-                                                <p className="bg-gray-100 p-1 text-sm rounded inline-block">{reply.text}</p>
+                            <div className="flex-1 border p-4 mb-4 overflow-y-auto w-full md:w-[60%] shadow-lg rounded-lg">
+                                <div className="custom-scrollbar" style={{ minHeight: '300px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+                                    {messages.map((msg) => (
+                                        <div key={msg.id} className="mb-2 flex flex-col pr-5">
+                                            <div className={`p-1 text-sm rounded inline-block mb-2 ${msg.senderId === user.uid ? 'bg-green-100 self-end' : 'bg-gray-200 self-start'}`}>
+                                                {msg.text}
                                             </div>
-                                        ))}
-                                    </div>
-                                ))}
+                                            {msg.replies.map((reply) => (
+                                                <div key={reply.id} className="ml-4 mb-2 mt-2 flex">
+                                                    <div className={`p-1 text-sm rounded inline-block ${reply.senderId === user.uid ? 'bg-green-100 self-end' : 'bg-gray-200 self-start'}`}>
+                                                        {reply.text}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex">
+
+                            <div className="flex w-full md:w-[60%]">
                                 <textarea
-                                    className="w-[60%] border p-1 rounded text-sm"
+                                    className="flex-1 border p-1 rounded text-sm"
                                     rows="1"
                                     placeholder="Type your message..."
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                 />
                                 <button className="bg-green-500 text-white py-1 px-7 text-sm rounded ml-2" onClick={sendMessage}>Send</button>
                             </div>

@@ -4,7 +4,7 @@ import Farming from "../../Assets/Images/Farming.jpg"
 
 const Hero = () => {
     return (
-        <div className="min-h-screen p-6 md:p-12 flex flex-col md:flex-row items-center justify-center">
+        <div className="h-auto p-6 md:p-12 flex flex-col md:flex-row items-center justify-center">
             <div className="w-full md:w-1/2 mt-16 md:mt-0 md:ml-12">
                 <div className="mb-4 md:mb-8">
                     <h1 className="text-lg md:text-xl subpixel-antialiased text-gray-700 text-center md:text-left">Network | Learn | Save</h1>

@@ -89,7 +89,6 @@ const Profile = () => {
       }
     }
   };
-  
 
   if (!user || !userData) {
     return <div>Loading...</div>;
@@ -101,22 +100,22 @@ const Profile = () => {
         <Navbar />
       </div>
 
-      <section className="flex gap-16 p-8">
+      <section className="flex flex-col md:flex-row gap-8 p-4 md:p-8 mt-16">
         {/* User activities */}
-        <div className="mt-24 flex-1 ml-[10%]">
-          <div className="flex items-center gap-4">
+        <div className="flex-1 items-center">
+          <div className="flex items-center shadow p-2 w-full md:w-[87%] rounded gap-4 mx-auto">
             {profileDetails.profilePicture && (
-              <img src={profileDetails.profilePicture} alt="Profile" className="w-20 h-20 rounded-full" />
+              <img src={profileDetails.profilePicture} alt="Profile" className="w-10 h-10 rounded-full" />
             )}
-            <h2 className="text-3xl sm:text-5xl font-medium">{profileDetails.name}</h2>
+            <h2 className="text-sm sm:text-5xl font-medium">{profileDetails.name}</h2>
             <button
-              className="border border-gray-500 text-sm text-black py-2 px-4 rounded"
+              className="bg-green-800 ml-auto text-sm text-white py-1 px-4 rounded"
               onClick={() => setIsEditing(true)}
             >
               Edit Profile
             </button>
           </div>
-          <div className="mt-8">
+          <div className="mt-4">
             {userPosts.length > 0 ? (
               userPosts.map(post => (
                 <PostCard
@@ -139,57 +138,63 @@ const Profile = () => {
         </div>
 
         {/* User details */}
-        <div className="flex-1 border border-gray-300 py-12 px-12 bg-white rounded mt-20">
-          <h2 className="text-2xl font-medium mb-4">Profile Details</h2>
-          <div className="mb-8">
-            <h3 className="text-xl font-medium mb-2">Personal Details</h3>
-            <div>
-              <p><strong>Name:</strong> {profileDetails.name}</p>
-              <p><strong>Email:</strong> {user.email || userData.email}</p>
-              <p><strong>Phone:</strong> {profileDetails.personalPhone}</p>
+        <div className="flex-1 py-1 px-4 md:px-12 bg-white rounded mt-2">
+          <div className="border border-gray-300 py-6 px-4 md:px-8 bg-green-50 rounded">
+            <h2 className="text-sm font-medium mb-2">Profile Details</h2>
+            <div className="mb-4">
+              <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Personal Details</h3>
+              <div className="text-xs">
+                <p><strong>Name:</strong> {profileDetails.name}</p>
+                <p><strong>Email:</strong> {user.email || userData.email}</p>
+                <p><strong>Phone:</strong> {profileDetails.personalPhone}</p>
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-xl font-medium mb-2">Business Details</h3>
             <div>
-              <p><strong>Business Name:</strong> {profileDetails.businessName}</p>
-              <p><strong>Business Email:</strong> {profileDetails.businessEmail}</p>
-              <p><strong>Business Phone:</strong> {profileDetails.businessPhone}</p>
+              <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Business Details</h3>
+              <div className="text-xs">
+                <p><strong>Business Name:</strong> {profileDetails.businessName}</p>
+                <p><strong>Business Email:</strong> {profileDetails.businessEmail}</p>
+                <p><strong>Business Phone:</strong> {profileDetails.businessPhone}</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
+      <div className="w-full bg-white mt-8">
+        <Footer />
+      </div>
+
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-3xl h-auto">
-            <h2 className="text-sm font-medium mb-4">Edit Profile</h2>
-            <form onSubmit={handleSubmit} className="flex flex-wrap justify-around">
-              <div className="w-full md:w-1/2">
-                <h3 className="text-xl font-medium mb-2">Personal Details</h3>
-                <label className="block mb-2 text-sm">
-                  Name:
+          <div className="bg-white p-4 md:p-6 rounded shadow-lg max-w-md w-full">
+            <h2 className="text-lg md:text-xl font-medium mb-4">Edit Profile</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                <h3 className="text-base md:text-lg font-medium">Personal Details</h3>
+                <label className="block">
+                  <span className="text-xs md:text-sm">Name:</span>
                   <input
-                    className="border p-2 rounded w-full mr-2"
+                    className="border p-2 rounded"
                     type="text"
                     name="name"
                     value={profileDetails.name}
                     onChange={handleInputChange}
                   />
                 </label>
-                <label className="block mb-2 text-sm">
-                  Email:
+                <label className="block">
+                  <span className="text-xs md:text-sm">Email:</span>
                   <input
-                    className="border p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="email"
                     value={user.email || userData.email}
                     readOnly
                   />
                 </label>
-                <label className="block mb-2 text-sm">
-                  Personal Phone:
+                <label className="block">
+                  <span className="text-xs md:text-sm">Personal Phone:</span>
                   <input
-                    className="border p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="text"
                     name="personalPhone"
                     value={profileDetails.personalPhone}
@@ -197,49 +202,49 @@ const Profile = () => {
                   />
                 </label>
               </div>
-              <div className="w-full md:w-1/2">
-                <h3 className="text-xl font-medium mb-2">Business Details</h3>
-                <label className="block mb-2 text-sm">
-                  Business Name:
+              <div className="flex flex-col gap-3">
+                <h3 className="text-base md:text-lg font-medium">Business Details</h3>
+                <label className="block">
+                  <span className="text-xs md:text-sm">Business Name:</span>
                   <input
-                    className="border p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="text"
                     name="businessName"
                     value={profileDetails.businessName}
                     onChange={handleInputChange}
                   />
                 </label>
-                <label className="block mb-2 text-sm">
-                  Business Email:
+                <label className="block">
+                  <span className="text-xs md:text-sm">Business Email:</span>
                   <input
-                    className="border p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="email"
                     name="businessEmail"
                     value={profileDetails.businessEmail}
                     onChange={handleInputChange}
                   />
                 </label>
-                <label className="block mb-2 text-sm">
-                  Business Phone:
+                <label className="block">
+                  <span className="text-xs md:text-sm">Business Phone:</span>
                   <input
-                    className="border text-xs text-gray-300 p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="text"
                     name="businessPhone"
                     value={profileDetails.businessPhone}
                     onChange={handleInputChange}
                   />
                 </label>
-                <label className="block mb-2 text-sm">
-                  Profile Picture:
+                <label className="block">
+                  <span className="text-xs md:text-sm">Profile Picture:</span>
                   <input
-                    className="border p-2 rounded w-full"
+                    className="border p-2 md:p-1 rounded"
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
                   />
                 </label>
               </div>
-              <div className="w-full flex justify-end gap-4 mt-4">
+              <div className="flex justify-end mt-4">
                 <button
                   className="bg-green-500 text-white text-sm py-2 px-4 rounded"
                   type="button"
@@ -255,10 +260,6 @@ const Profile = () => {
           </div>
         </div>
       )}
-
-      <div className="fixed bottom-0 z-10 w-full bg-white">
-        <Footer />
-      </div>
     </div>
   );
 };

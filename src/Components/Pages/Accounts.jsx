@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../AppContext/AppContext';
 import { db } from '../firebase/firebase';
-import { doc, getDoc, getDocs, setDoc, updateDoc, query, collection, where, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDoc, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import Navbar from '../Navbar/Navbar';
 import Tabs from '../Accounts/Tabs';
 import TrackingTab from '../Accounts/TrackingTab';
@@ -135,7 +135,6 @@ const Accounts = () => {
             const newEscrowBalance = escrowBalance - amount;
             const newBalance = balance + amount;
             await updateDoc(doc(db, "users", user.uid), {
-                escrowBalance: newEscrowBalance,
                 balance: newBalance,
             });
 
@@ -223,7 +222,6 @@ const Accounts = () => {
                             loading={loadingEscrow}
                         />
                     )}
-
                     {activeTab === 'financial' && <FinancialTab />}
                 </div>
             </div>

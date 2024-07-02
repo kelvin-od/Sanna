@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { doc, onSnapshot, updateDoc, collection, query, where } from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+import React, { useState } from 'react';
 
 const EscrowTab = ({ user, handleWithdrawFromEscrow, loading, escrowTransactions, escrowBalance }) => {
     const [currentPage, setCurrentPage] = useState(0);
