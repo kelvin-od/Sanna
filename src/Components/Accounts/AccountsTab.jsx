@@ -54,21 +54,21 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-[70%]">
-            <h2 className="text-2xl font-bold mb-4">Account Balance: {balance !== null ? `KSh ${balance.toFixed(2)}` : 'Loading...'}</h2>
+        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-full lg:w-3/4 mx-auto">
+            <h2 className="text-2xl font-bold mb-4 text-center">Account Balance: {balance !== null ? `KSh ${balance.toFixed(2)}` : 'Loading...'}</h2>
             <div className="divide-y divide-gray-200">
                 <p className="text-gray-700 font-medium text-sm mb-2">Your Products/Goods on Transits:</p>
-                {visibleNotifications.map((transaction) => ( // Use visibleNotifications instead of transactions
-                    <div key={transaction.id} className="py-3 flex items-center justify-between">
+                {visibleNotifications.map((transaction) => (
+                    <div key={transaction.id} className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between">
                         <div>
                             <p className="text-xs font-medium">Product: {transaction.productDetails.name}</p>
                             <p className="text-xs text-gray-500">Price: KSh {transaction.productDetails.crossSalePrice}</p>
                         </div>
-                        <div>
+                        <div className="mt-2 sm:mt-0">
                             <p className={`text-xs font-medium ${transaction.status === "confirmed" ? "text-green-500" : "text-yellow-500"}`}>Status: {transaction.status}</p>
                             {transaction.status === "pending" && (
                                 <button
-                                    className="bg-green-500 text-xs text-white py-1 px-2 rounded mt-2"
+                                    className="bg-green-500 text-xs text-white py-1 px-2 rounded mt-2 sm:mt-0 sm:ml-2"
                                     onClick={() => handleConfirmClick(transaction)}
                                 >
                                     Confirm Receipt
@@ -82,7 +82,6 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
                 <button className="border border-green-500 text-gray-700 text-sm py-1 px-4 rounded hover:bg-green-100" onClick={handleDepositClick}>
                     Deposit
                 </button>
-                
                 <button className="border border-green-500 text-gray-700 text-sm py-1 px-4 rounded hover:bg-green-100 ml-2" onClick={handleWithdrawClick}>
                     Withdraw
                 </button>
@@ -121,18 +120,18 @@ const AccountsTab = ({ transactions, balance, handleDeposit, handleWithdrawFromA
                 {totalPages > 1 && (
                     <div className="flex justify-between mt-4">
                         <button
-                            className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`border border-gray-300 text-gray-700 text-sm py-1 px-4 rounded hover:bg-gray-100 ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             onClick={handlePrevPage}
                             disabled={page === 1}
                         >
-                            {'< Previous'}
+                            ← Previous
                         </button>
                         <button
-                            className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`border border-gray-300 text-gray-700 text-sm py-1 px-4 rounded hover:bg-gray-100 ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                             onClick={handleNextPage}
                             disabled={page === totalPages}
                         >
-                            {'Next >'}
+                            Next →
                         </button>
                     </div>
                 )}

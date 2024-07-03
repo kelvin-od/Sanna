@@ -23,8 +23,8 @@ const EscrowTab = ({ user, handleWithdrawFromEscrow, loading, escrowTransactions
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-[70%]">
-            <h2 className="text-2xl font-bold mb-4">
+        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-full lg:w-3/4 mx-auto">
+            <h2 className="text-2xl font-bold mb-4 text-center">
                 Escrow Balance: {loading ? 'Loading...' : (escrowBalance !== null ? `KSh ${escrowBalance.toFixed(2)}` : 'N/A')}
             </h2>
             <div className="mt-4">
@@ -32,12 +32,12 @@ const EscrowTab = ({ user, handleWithdrawFromEscrow, loading, escrowTransactions
                 <ul className="divide-y divide-gray-200">
                     {currentTransactions.map((transaction) => {
                         return (
-                            <li key={transaction.id} className="py-2 flex items-center justify-between cursor-pointer relative">
+                            <li key={transaction.id} className="py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between cursor-pointer relative">
                                 <div>
                                     <p className="text-xs font-medium">Product: {transaction.productName}</p>
                                     <p className="text-xs text-gray-500">Price: KSh {transaction.amount}</p>
                                 </div>
-                                <div>
+                                <div className="mt-2 sm:mt-0">
                                     <p className={`text-sm font-medium ${transaction.status === "held" ? "text-blue-500" : "text-green-500"}`}>Status: {transaction.status}</p>
                                     {transaction.status === "released" && (
                                         <button

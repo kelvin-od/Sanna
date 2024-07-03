@@ -10,9 +10,9 @@ const Leftside = ({ profilePicture }) => {
   const profilePictureUrl = profilePicture || avatar;
 
   return (
-    <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-lg lg:w-full md:w-1/2 sm:w-full'>
+    <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-sm lg:w-full md:w-1/2 sm:w-full'>
       <div className='flex flex-col items-center relative'>
-        <img className='h-20 sm:h-35 w-full rounded-t-md' src={edu} alt="edu" />
+        <img className='h-30 sm:h-30 w-full rounded-t-md' src={edu} alt="edu" />
         <div className='absolute -bottom-8'>
           <img className='rounded-full h-16 w-16' src={user?.photoURL || avatar} alt="avatar" />
         </div>

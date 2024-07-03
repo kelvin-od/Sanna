@@ -122,13 +122,12 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
                     <img className="w-[2rem] rounded-full" src={user?.photoURL || avatar} alt="avatar" />
                 </div>
                 <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
-                    <textarea ref={comment} className="bg-green-50 w-full p-2 text-sm rounded-lg border-none outline-none" placeholder="Write a comment"></textarea>
-                    <button className="p-1" onClick={addComment}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </button>
+                    <textarea ref={comment} className="bg-green-50 w-full px-2 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
+                    
                 </div>
+                <button className="p-2 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
+                        Ask
+                    </button>
             </div>
             <div className="bg-white w-full py-1 rounded-b-3xl">
                 {state.comments.map((comment) => (

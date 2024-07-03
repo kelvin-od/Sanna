@@ -3,18 +3,20 @@ import { doc, updateDoc, deleteDoc, getDoc, collection, query, orderBy, onSnapsh
 import { db } from "../firebase/firebase";
 import avatar from "../../Assets/Images/avatar.avif";
 
-const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, onReply, onEdit, onDelete, parentId }) => {
+const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, onReply, onEdit, onDelete, parentId, postId }) => {
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState(comment);
     const [showReplyInput, setShowReplyInput] = useState(false);
     const [reply, setReply] = useState("");
     const [replies, setReplies] = useState([]);
+    const [likes, setLikes] = useState(0); // State to keep track of likes
+    const [hasLiked, setHasLiked] = useState(false); // State to keep track if the user has liked the comment
     const menuRef = useRef(null);
 
     useEffect(() => {
         if (parentId) {
-            const collectionOfReplies = collection(db, `posts/${parentId}/comments/${id}/replies`);
+            const collectionOfReplies = collection(db, `posts/${postId}/comments/${parentId}/replies`);
             const q = query(collectionOfReplies, orderBy("timestamp", "asc"));
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -23,7 +25,7 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
             return () => unsubscribe();
         }
-    }, [id, parentId]);
+    }, [id, parentId, postId]);
 
     const handleClick = (id) => {
         setShowOptions((prevState) => ({
@@ -47,7 +49,9 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     const handleEdit = async () => {
         if (newComment.trim() !== "") {
-            const commentRef = doc(db, `posts/${parentId || ''}/comments`, id);
+            const commentRef = parentId 
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+                : doc(db, `posts/${postId}/comments`, id);
             try {
                 const commentDoc = await getDoc(commentRef);
                 if (commentDoc.exists()) {
@@ -65,12 +69,9 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     const handleDelete = async () => {
         if (loggedInUserId === postAuthorId || loggedInUserId === userId) {
-            let commentRef;
-            if (parentId) {
-                commentRef = doc(db, `posts/${parentId}/comments/${id}/replies`, parentId); // Construct document reference for a reply
-            } else {
-                commentRef = doc(db, `posts/${id}/comments/${id}`); // Construct document reference for a top-level comment
-            }
+            const commentRef = parentId 
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+                : doc(db, `posts/${postId}/comments`, id);
             try {
                 await deleteDoc(commentRef);
                 onDelete(id); // Notify parent component of delete
@@ -89,6 +90,46 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
             setShowReplyInput(false); // Hide the reply input field after submitting
         }
     };
+
+    const handleLike = async () => {
+        const commentRef = parentId 
+            ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+            : doc(db, `posts/${postId}/comments`, id);
+        try {
+            const commentDoc = await getDoc(commentRef);
+            if (commentDoc.exists()) {
+                const currentLikes = commentDoc.data().likes || 0;
+                const newLikes = hasLiked ? currentLikes - 1 : currentLikes + 1;
+                await updateDoc(commentRef, { likes: newLikes });
+                setLikes(newLikes);
+                setHasLiked(!hasLiked);
+            } else {
+                console.error("Comment document does not exist:", id);
+            }
+        } catch (error) {
+            console.error("Error liking the comment: ", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchLikes = async () => {
+            const commentRef = parentId 
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+                : doc(db, `posts/${postId}/comments`, id);
+            try {
+                const commentDoc = await getDoc(commentRef);
+                if (commentDoc.exists()) {
+                    setLikes(commentDoc.data().likes || 0);
+                    // Check if the user has liked the comment (assuming a `likedBy` field containing user IDs)
+                    const likedBy = commentDoc.data().likedBy || [];
+                    setHasLiked(likedBy.includes(loggedInUserId));
+                }
+            } catch (error) {
+                console.error("Error fetching likes: ", error);
+            }
+        };
+        fetchLikes();
+    }, [id, parentId, postId, loggedInUserId]);
 
     return (
         <div className="flex items-start mt-2 w-full relative">
@@ -148,14 +189,19 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                         Save
                     </button>
                 )}
-                {!parentId && (
-                    <button
-                        onClick={() => setShowReplyInput(!showReplyInput)}
-                        className="flex text-xs text-gray-500 bottom-0 mt-1 ml-1"
-                    >
-                        Reply
+                <div className="flex items-center space-x-2 mt-1">
+                    <button onClick={handleLike} className="text-xs text-gray-500 ml-2 focus:outline-none mt-2">
+                        {hasLiked ? "Unlike" : "Like"} ({likes})
                     </button>
-                )}
+                    {!parentId && (
+                        <button
+                            onClick={() => setShowReplyInput(!showReplyInput)}
+                            className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
+                        >
+                            Reply
+                        </button>
+                    )}
+                </div>
                 {showReplyInput && !parentId && (
                     <div className="flex flex-col mt-2">
                         <textarea
@@ -183,6 +229,7 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                             onEdit={onEdit}
                             onDelete={onDelete}
                             parentId={id} // Pass the parent comment's ID as parentId for replies
+                            postId={postId} // Pass postId to child comments
                         />
                     </div>
                 ))}

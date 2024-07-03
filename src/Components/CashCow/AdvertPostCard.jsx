@@ -129,53 +129,53 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
     };
 
     return (
-        <div className="mb-4 justify-center mx-8">
-            <div className="flex justify-end ml-1 font-roboto font-normal text-black p-2 my-1 rounded-sm text-xs no-underline tracking-normal leading-none">
+        <div className="mb-2 flex flex-col justify-center mx-4 md:mx-8">
+            <div className="flex justify-end ml-1 font-roboto font-normal text-black p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
                 <p className="bg-green-500 py-1 px-2 rounded-md text-white">Promoted</p>
             </div>
 
-            <div className="post-card p-4 bg-green-50 rounded-lg border border-gray-400 shadow mb-4">
-                <div className="flex items-center">
-                    <img className="w-[2rem] rounded-full" src={avatar} alt="avatar" />
-                    <div className="flex flex-col w-full">
-                        <p className="ml-4 font-roboto w-full font-normal text-sm no-underline tracking-normal leading-none">
+            <div className="post-card p-4 bg-green-50 rounded-lg border border-gray-300 shadow-md mb-4">
+                <div className="flex items-center py-2 md:py-4">
+                    <img className="w-8 h-8 md:w-10 md:h-10 rounded-full" src={avatar} alt="avatar" />
+                    <div className="flex flex-col ml-4 w-full">
+                        <p className="font-roboto font-medium pb-1 text-sm text-gray-700 tracking-normal leading-none">
                             {businessName}
                         </p>
-                        <p className="ml-4 font-roboto w-[90%] font-normal text-xs text-gray-500 no-underline tracking-normal leading-none">
+                        <p className="font-roboto font-normal text-xs text-gray-500">
                             Published: {timestamp}
                         </p>
                     </div>
                 </div>
                 <div className="mt-4">
-                    <p className="text-sm font-roboto">{text}</p>
+                    <p className="text-sm md:text-base font-roboto">{text}</p>
                     {image && <img src={image} alt="Post Content" className="mt-2 w-full rounded" />}
                 </div>
 
-                <div className='grid grid-cols-2 gap-1 w-full p-4 border border-gray-300 rounded-lg my-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-1 w-full p-4 border border-gray-300 rounded-lg my-4'>
                     <div className='flex'>
-                        <p className="text-sm font-medium font-roboto text-gray-700 mr-2">Location:</p>
-                        <span className='text-sm text-gray-700'>{location}</span>
+                        <p className="text-sm md:text-base font-medium font-roboto text-gray-700 mr-2">Location:</p>
+                        <span className='text-sm md:text-base text-gray-700'>{location}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm font-medium mr-2 font-roboto text-gray-700">Retail Price:</p>
-                        <span className='text-sm text-gray-700'>Kshs {retailPrice}</span>
+                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Retail Price:</p>
+                        <span className='text-sm md:text-base text-gray-700'>Kshs {retailPrice}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm font-medium mr-2 font-roboto text-gray-700">Date of expiry:</p>
-                        <span className='text-sm text-gray-700'>{expiryDate}</span>
+                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Date of expiry:</p>
+                        <span className='text-sm md:text-base text-gray-700'>{expiryDate}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm font-medium mr-2 font-roboto text-gray-700">Cross_Sale Price:</p>
-                        <span className='text-sm text-gray-700'>Kshs {crossSalePrice}</span>
+                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Cross_Sale Price:</p>
+                        <span className='text-sm md:text-base text-gray-700'>Kshs {crossSalePrice}</span>
                     </div>
                 </div>
 
-                <div className="flex justify-around pb-1 items-center border-t">
+                <div className="flex  md:flex-row justify-around pb-1 items-center border-t">
                     <button className="flex items-center cursor-pointer rounded-lg pt-2 hover:bg-gray-100" onClick={() => setIsPurchasePopupVisible(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-tooltip-id="purchase-tooltip" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-tooltip-id="purchase-tooltip" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                         </svg>
-                        <span className="text-xs font-normal ml-1">Purchase Product</span>
+                        <span className="text-xs md:text-sm font-normal ml-1">Purchase Product</span>
                     </button>
 
                     <Tooltip
@@ -183,20 +183,20 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                         place="bottom"
                         effect="solid"
                         style={{ fontSize: '11px', backgroundColor: '#4ade80', color: 'white' }}>
-                        Upon paying for the item, your fund will be safely placed in an escrow account until your products are delivered. Otherwise, you will recieve a full refund.
+                        Upon paying for the item, your fund will be safely placed in an escrow account until your products are delivered. Otherwise, you will receive a full refund.
                     </Tooltip>
 
                     <button className="flex items-center cursor-pointer rounded-lg pt-2 hover:bg-gray-100" onClick={handleMessage}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                         </svg>
-                        <span className="text-xs font-normal ml-1">Message Seller</span>
+                        <span className="text-xs md:text-sm font-normal ml-1">Message Seller</span>
                     </button>
                 </div>
 
                 {isMessagePopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-4 rounded shadow-md w-96">
+                        <div className="bg-white p-4 rounded shadow-md w-11/12 md:w-96">
                             <h2 className="font-medium text-sm mb-2">Message Seller</h2>
                             <textarea
                                 className="w-full border border-gray-300 p-2 text-xs rounded mb-4"
@@ -215,7 +215,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
 
                 {isPurchasePopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-4 rounded shadow-md w-96">
+                        <div className="bg-white p-4 rounded shadow-md w-11/12 md:w-96">
                             <h2 className="font-medium text-sm mb-2">Deposit Funds</h2>
                             <p className="mb-4">Are you sure you want to purchase {name} for Kshs {crossSalePrice}?</p>
                             <div className="flex justify-end">
@@ -228,7 +228,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
 
                 {isDepositPopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-4 rounded shadow-md w-96">
+                        <div className="bg-white p-4 rounded shadow-md w-11/12 md:w-96">
                             <h2 className="font-medium text-sm mb-2">Deposit Funds</h2>
                             <p className="mb-4">Your current balance is Kshs {balance}. Please deposit additional funds to proceed with the purchase.</p>
                             <input

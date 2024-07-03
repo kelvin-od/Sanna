@@ -155,18 +155,17 @@ const CrossSell = () => {
                 <Navbar />
             </div>
 
-            <div className='flex flex-col lg:flex-row h-screen bg-gray-100'>
-                <div className='lg:w-[30%] ml-12 p-4'>
-
+            <div className='flex flex-col lg:flex-row h-auto bg-gray-100'>
+                <div className='lg:w-1/3 ml-2 p-4'>
                     <AdvertSection />
                 </div>
-                <div className='lg:w-[60%] right-0 p-4 mt-16 mr-8'>
-                    <div className="mt-4 lg:mt-0 bg-green-50 border border-green-200 rounded-lg shadow-lg p-8">
+                <div className='lg:w-2/3 p-4  lg:mt-16'>
+                    <div className="mt-4 lg:mt-0 bg-green-50 border border-green-200 rounded-lg shadow-lg p-4">
                         <div className='flex items-center'>
                             <h2 className="text-sm font-semibold mb-2">Analytics Dashboard</h2>
                             <FaInfoCircle
                                 data-tooltip-id="analytic-tooltip"
-                                className="ml-2 text-gray-500 cursor-pointer my-anchor-element"
+                                className="ml-2 text-gray-500 cursor-pointer"
                             />
                             <Tooltip
                                 id="analytic-tooltip"
@@ -178,43 +177,43 @@ const CrossSell = () => {
                         </div>
 
                         <div className="text-sm space-y-2">
-                            <div className="mt-2 p-2 bg-gray-100 rounded-md overflow-x-auto">
+                            <div className=" p-2 bg-gray-100 rounded-md overflow-x-auto">
                                 {adverts.length > 0 ? (
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                                <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                                <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Day of Posting</th>
-                                                <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                                <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Day of Posting</th>
+                                                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {adverts.map((advert) => (
                                                 <tr key={advert.id}>
-                                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">{advert.id}</td>
-                                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">{advert.text}</td>
-                                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(advert.timestamp?.toDate()).toLocaleDateString()}</td>
-                                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">Active</td>
-                                                    <td className="px-6 py-2 whitespace-nowrap text-xs text-gray-500">
+                                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500">{advert.id}</td>
+                                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500">{advert.text}</td>
+                                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(advert.timestamp?.toDate()).toLocaleDateString()}</td>
+                                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500">Active</td>
+                                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500 flex flex-wrap space-x-2">
                                                         <button
-                                                            className="text-indigo-600 hover:text-indigo-900 mr-2"
+                                                            className="text-indigo-600 hover:text-indigo-900"
                                                             onClick={() => handleEdit(advert.id)}
                                                         >
-                                                            <FaEdit className="mr-2" />
+                                                            <FaEdit />
                                                         </button>
                                                         <button
                                                             className="text-red-600 hover:text-red-900"
                                                             onClick={() => handleDelete(advert.id)}
                                                         >
-                                                            <FaTrashAlt className="mr-2" />
+                                                            <FaTrashAlt />
                                                         </button>
                                                         <button
                                                             className="text-green-600 hover:text-green-900"
                                                             onClick={() => handleViewPerformance(advert.id)}
                                                         >
-                                                            <FaChartLine className="mr-2" />
+                                                            <FaChartLine />
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -230,12 +229,10 @@ const CrossSell = () => {
                         </div>
                     </div>
 
-
-                    <div className='mt-12 border-y border-green-100 py-3 pl-4'>
-
-                        <Link to="/accounts" className="flex items-center gap-2 bg-green-700 w-[35%] py-1 pl-3 text-white text-sm rounded hover:bg-green-300">
-                            Track your Profits and expenses
-                            <svg className="w-5 h-5 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
+                    <div className='mt-1 mb-16 border-y border-green-100 py-3'>
+                        <Link to="/accounts" className="flex items-center gap-2 bg-green-700 py-1 px-3 text-white text-xs rounded hover:bg-green-300">
+                            Track your Profits and Expenses
+                            <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                             </svg>
                         </Link>

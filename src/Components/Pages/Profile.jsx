@@ -115,7 +115,7 @@ const Profile = () => {
               Edit Profile
             </button>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             {userPosts.length > 0 ? (
               userPosts.map(post => (
                 <PostCard
@@ -134,7 +134,7 @@ const Profile = () => {
             ) : (
               <p>No posts yet</p>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* User details */}
@@ -161,105 +161,108 @@ const Profile = () => {
         </div>
       </section>
 
-      <div className="w-full bg-white mt-8">
+      <div className="hidden md:block w-full bg-white mt-8">
         <Footer />
       </div>
 
       {isEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 md:p-6 rounded shadow-lg max-w-md w-full">
-            <h2 className="text-lg md:text-xl font-medium mb-4">Edit Profile</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3">
-                <h3 className="text-base md:text-lg font-medium">Personal Details</h3>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Name:</span>
-                  <input
-                    className="border p-2 rounded"
-                    type="text"
-                    name="name"
-                    value={profileDetails.name}
-                    onChange={handleInputChange}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Email:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="email"
-                    value={user.email || userData.email}
-                    readOnly
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Personal Phone:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="text"
-                    name="personalPhone"
-                    value={profileDetails.personalPhone}
-                    onChange={handleInputChange}
-                  />
-                </label>
-              </div>
-              <div className="flex flex-col gap-3">
-                <h3 className="text-base md:text-lg font-medium">Business Details</h3>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Business Name:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="text"
-                    name="businessName"
-                    value={profileDetails.businessName}
-                    onChange={handleInputChange}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Business Email:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="email"
-                    name="businessEmail"
-                    value={profileDetails.businessEmail}
-                    onChange={handleInputChange}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Business Phone:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="text"
-                    name="businessPhone"
-                    value={profileDetails.businessPhone}
-                    onChange={handleInputChange}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs md:text-sm">Profile Picture:</span>
-                  <input
-                    className="border p-2 md:p-1 rounded"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
-              </div>
-              <div className="flex justify-end mt-4">
-                <button
-                  className="bg-green-500 text-white text-sm py-2 px-4 rounded"
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </button>
-                <button className="text-black text-sm border border-green-600 py-2 px-4 rounded" type="submit">
-                  Save
-                </button>
-              </div>
-            </form>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-4 md:p-6 rounded shadow-lg max-w-md w-full">
+      <h2 className="text-lg md:text-xl font-medium mb-4 text-center">Edit Profile</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-base md:text-lg font-medium">Personal Details</h3>
+            <label className="block">
+              <span className="text-xs md:text-sm">Name:</span>
+              <input
+                className="border p-2 rounded"
+                type="text"
+                name="name"
+                value={profileDetails.name}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs md:text-sm">Email:</span>
+              <input
+                className="border p-2 rounded"
+                type="email"
+                value={user.email || userData.email}
+                readOnly
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs md:text-sm">Personal Phone:</span>
+              <input
+                className="border p-2 rounded"
+                type="text"
+                name="personalPhone"
+                value={profileDetails.personalPhone}
+                onChange={handleInputChange}
+              />
+            </label>
+          </div>
+          <div className="flex flex-col gap-3">
+            <h3 className="text-base md:text-lg font-medium">Business Details</h3>
+            <label className="block">
+              <span className="text-xs md:text-sm">Business Name:</span>
+              <input
+                className="border p-2 rounded"
+                type="text"
+                name="businessName"
+                value={profileDetails.businessName}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs md:text-sm">Business Email:</span>
+              <input
+                className="border p-2 rounded"
+                type="email"
+                name="businessEmail"
+                value={profileDetails.businessEmail}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs md:text-sm">Business Phone:</span>
+              <input
+                className="border p-2 rounded"
+                type="text"
+                name="businessPhone"
+                value={profileDetails.businessPhone}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs md:text-sm">Profile Picture:</span>
+              <input
+                className="border p-2 rounded"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </label>
           </div>
         </div>
-      )}
+        <div className="flex justify-end mt-4">
+          <button
+            className="bg-gray-300 text-sm text-gray-800 py-2 px-4 rounded hover:bg-gray-400"
+            type="button"
+            onClick={() => setIsEditing(false)}
+          >
+            Cancel
+          </button>
+          <button className="bg-green-500 text-sm text-white py-2 px-4 rounded hover:bg-green-600" type="submit">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
