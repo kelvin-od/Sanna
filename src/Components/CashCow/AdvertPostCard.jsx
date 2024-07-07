@@ -4,6 +4,10 @@ import { db } from '../firebase/firebase';
 import avatar from "../../Assets/Images/avatar.avif";
 import { Tooltip } from 'react-tooltip';
 import { AuthContext } from "../AppContext/AppContext";
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe('pk_test_51PZd0vJIpuZzEOXAgFWUKMSHgwdzAshclJ5lvrMBFSDc9Vz8d22JMmHxooR9GYo0JJZlSKbhLK9ggo1BtzTp6OV500sHrWgIgO'); // Replace with your actual Stripe publishable key
 
 const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, location, expiryDate, name, image, text, timestamp }) => {
     const { user } = useContext(AuthContext);
@@ -14,6 +18,10 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
     const [amount, setAmount] = useState(crossSalePrice);
     const [balance, setBalance] = useState(0);
     const [depositAmount, setDepositAmount] = useState(0);
+    const stripe = useStripe();
+    const elements = useElements();
+    const [isExpanded, setIsExpanded] = useState(false);
+    const wordLimit = 15;
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -70,12 +78,44 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
             return;
         }
 
-        const productDetails = {
-            name,
-            crossSalePrice,
-        };
-
         try {
+            // Create payment intent with Firebase Function
+            const response = await fetch('YOUR_FIREBASE_FUNCTION_URL', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: crossSalePrice * 100, // Convert to cents or appropriate currency
+                    buyerId: user.uid,
+                    sellerId: uid,
+                }),
+            });
+
+            const { clientSecret } = await response.json();
+
+            // Confirm the payment with Stripe
+            const paymentIntent = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: elements.getElement(CardElement),
+                    billing_details: {
+                        name: user.displayName,
+                    },
+                },
+            });
+
+            if (paymentIntent.error) {
+                console.error("Payment failed: ", paymentIntent.error.message);
+                alert("Failed to complete payment");
+                return;
+            }
+
+            // Update purchase and escrow status in Firebase
+            const productDetails = {
+                name,
+                crossSalePrice,
+            };
+
             const purchaseRef = await addDoc(collection(db, "purchases"), {
                 buyerId: user.uid,
                 sellerId: uid,
@@ -128,10 +168,18 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
         }
     };
 
+    const truncateText = (text, wordLimit) => {
+        const words = text.split(' ');
+        if (words.length > wordLimit) {
+          return words.slice(0, wordLimit).join(' ') + '...';
+        }
+        return text;
+      }
+
     return (
         <div className="mb-2 flex flex-col justify-center mx-4 md:mx-8">
             <div className="flex justify-end ml-1 font-roboto font-normal text-black p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
-                <p className="bg-green-500 py-1 px-2 rounded-md text-white">Promoted</p>
+                <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
             </div>
 
             <div className="post-card p-4 bg-green-50 rounded-lg border border-gray-300 shadow-md mb-4">
@@ -147,7 +195,17 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                     </div>
                 </div>
                 <div className="mt-4">
-                    <p className="text-sm md:text-base font-roboto">{text}</p>
+                    <p className="text-sm md:text-base font-roboto">
+                        {isExpanded ? text : truncateText(text, wordLimit)}
+                    </p>
+                    {text.split(' ').length > wordLimit && (
+                        <button
+                            className="text-green-200 hover:underline text-sm"
+                            onClick={() => setIsExpanded(!isExpanded)}
+                        >
+                            {isExpanded ? "... see less" : "... see more"}
+                        </button>
+                    )}
                     {image && <img src={image} alt="Post Content" className="mt-2 w-full rounded" />}
                 </div>
 
@@ -216,10 +274,11 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                 {isPurchasePopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                         <div className="bg-white p-4 rounded shadow-md w-11/12 md:w-96">
-                            <h2 className="font-medium text-sm mb-2">Deposit Funds</h2>
+                            <h2 className="font-medium text-sm mb-2">Purchase Confirmation</h2>
                             <p className="mb-4">Are you sure you want to purchase {name} for Kshs {crossSalePrice}?</p>
-                            <div className="flex justify-end">
-                                <button className="bg-green-500 text-white text-sm px-4 py-1 rounded mr-2" onClick={handlePurchase}>Confirm</button>
+
+                            <div className="flex justify-end mt-4">
+                                <button className="bg-green-500 text-white text-sm px-4 py-1 rounded mr-2" onClick={handlePurchase}>Confirm Purchase</button>
                                 <button className="text-green-500 border text-sm px-4 py-1 rounded" onClick={() => setIsPurchasePopupVisible(false)}>Cancel</button>
                             </div>
                         </div>
@@ -231,6 +290,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                         <div className="bg-white p-4 rounded shadow-md w-11/12 md:w-96">
                             <h2 className="font-medium text-sm mb-2">Deposit Funds</h2>
                             <p className="mb-4">Your current balance is Kshs {balance}. Please deposit additional funds to proceed with the purchase.</p>
+
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 p-2 text-xs rounded mb-4"
@@ -238,7 +298,25 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                                 value={depositAmount}
                                 onChange={(e) => setDepositAmount(Number(e.target.value))}
                             />
-                            <div className="flex justify-end">
+                            <Elements stripe={stripePromise}>
+                                <CardElement
+                                    options={{
+                                        style: {
+                                            base: {
+                                                fontSize: '16px',
+                                                color: '#424770',
+                                                '::placeholder': {
+                                                    color: '#aab7c4',
+                                                },
+                                            },
+                                            invalid: {
+                                                color: '#9e2146',
+                                            },
+                                        },
+                                    }}
+                                />
+                            </Elements>
+                            <div className="flex justify-end mt-12">
                                 <button className="bg-green-500 text-white text-sm px-4 py-1 rounded mr-2" onClick={handleDeposit}>Deposit</button>
                                 <button className="text-green-500 border text-sm px-4 py-1 rounded" onClick={() => setIsDepositPopupVisible(false)}>Cancel</button>
                             </div>

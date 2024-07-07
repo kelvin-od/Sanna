@@ -31,8 +31,10 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
   const likesCollection = collection(db, "posts", id, "likes");
   const { ADD_LIKE, HANDLE_ERROR, ADD_COMMENT } = postActions;
   const [open, setOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const singlePostDocument = doc(db, "posts", id);
   const commentButtonRef = useRef(null);
+  const wordLimit = 20;
 
   const handleOpen = (e) => {
     e.preventDefault();
@@ -143,22 +145,36 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
   }, [id, ADD_LIKE, ADD_COMMENT, HANDLE_ERROR]);
 
   const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
+    try {
+      if (!timestamp) return ''; // Handle case where timestamp is null or undefined
   
-    let date;
-    if (timestamp.toDate) {
-      date = timestamp.toDate();
-    } else {
-      date = new Date(timestamp);
+      let date;
+      if (timestamp.toDate) {
+        date = timestamp.toDate(); // Assuming timestamp is a Firestore Timestamp
+      } else {
+        date = new Date(timestamp); // Fallback for other cases (e.g., JavaScript Date)
+      }
+  
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return 'Invalid Date'; // or handle it differently based on your UI requirements
     }
-  
-    return formatDistanceToNow(date, { addSuffix: true });
   };
 
+
+  const truncateText = (text, wordLimit) => {
+    const words = text.split(' ');
+    if (words.length > wordLimit) {
+      return words.slice(0, wordLimit).join(' ') + '...';
+    }
+    return text;
+  }
+
   return (
-    <div className=" flex flex-col mb-4 mx-4 md:mx-8 flex justify-center">
-      <div className="flex flex-col py-4 bg-white border border-gray-300 rounded-md w-full md:max-w-2xl shadow-md">
-        <div className="flex items-center py-2 md:py-4 px-4">
+    <div className="flex flex-col mb-4 md:mx-8 flex justify-center">
+      <div className="flex flex-col py-4 bg-white border border-gray-300 rounded-md w-full md:max-w-2xl md:shadow-md">
+        <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
           <img className="w-8 h-8 rounded-full" src={user?.photoURL || avatar} alt="avatar" />
           <div className="flex flex-col ml-4 w-full">
             <p className="font-roboto font-medium text-sm text-gray-700">
@@ -178,8 +194,16 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
         </div>
         <div className="px-4 pb-4">
           <p className="font-roboto font-normal text-black text-sm md:text-base leading-normal">
-            {text}
+           {isExpanded ? text : truncateText(text, wordLimit)}
           </p>
+          {text.split(' ').length > wordLimit && (
+            <button
+              className="text-green-200 hover:underline text-sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? "... see less" : "... see more"}
+            </button>
+          )}
           {image && (<img className="w-full h-auto mt-4" src={image} alt="userpost" />)}
         </div>
         <div className="flex items-center justify-around w-full border-t border-gray-300 px-4 pt-2">
@@ -188,7 +212,7 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
             onClick={handleLike}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 fill-gray-700 hover:fill-gray-500">
-              <path fillRule="evenodd" d="M4.56 3.56c2.32-2.32 6.08-2.32 8.4 0l.94.94.94-.94c2.32-2.32 6.08-2.32 8.4 0 2.32 2.32 2.32 6.08 0 8.4l-9.56 9.56a1.5 1.5 0 0 1-2.12 0L4.56 11.96c-2.32-2.32-2.32-6.08 0-8.4Z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M4.56 3.56c2.32-2.32 6.08-2.32 8.4 0l.44.44.44-.44c2.32-2.32 6.08-2.32 8.4 0 2.32 2.32 2.32 6.08 0 8.4l-9.56 9.56a1.5 1.5 0 0 1-2.12 0L4.56 11.96c-2.32-2.32-2.32-6.08 0-8.4Z" clipRule="evenodd" />
             </svg>
             <span className="ml-2 text-xs font-roboto text-black">{state.likes.length}</span>
             <span className="text-xs font-normal ml-1">Like</span>

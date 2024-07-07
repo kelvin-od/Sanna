@@ -158,7 +158,7 @@ const [showPopup, setShowPopup] = useState(false);
       });
     };
     postData();
-  }, [SUBMIT_POST]);
+  }, [SUBMIT_POST, collectionRef]);
 
   useEffect(() => {
     const fetchAdvertPosts = async () => {
@@ -171,7 +171,7 @@ const [showPopup, setShowPopup] = useState(false);
       });
     };
     fetchAdvertPosts();
-  }, []);
+  }, [advertsCollectionRef]);
 
   const combinedPosts = [...state.posts, ...advertPosts].sort((a, b) => {
     if (!a.timestamp) return 1; // Move posts with null timestamp to the end
@@ -248,7 +248,7 @@ const [showPopup, setShowPopup] = useState(false);
             </label>
             {file && (<button onClick={submitImage}>Upload</button>)}
           </div>
-          <div className='flex items-center'>
+          {/* <div className='flex items-center'>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.904 18.5H18.75m-12.846 0-.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
             </svg>
@@ -259,7 +259,7 @@ const [showPopup, setShowPopup] = useState(false);
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 3.75 18 6m0 0 2.25 2.25M18 6l2.25-2.25M18 6l-2.25 2.25m1.5 13.5c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z" />
             </svg>
             <p className='font-roboto font-normal text-sm ml-2 text-gray-700 no-underline tracking-normal leading-none'>Feeling</p>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -317,7 +317,7 @@ const [showPopup, setShowPopup] = useState(false);
             </label>
             {file && (<button onClick={submitImage}>Upload</button>)}
           </div>
-          <div className='flex items-center'>
+          {/* <div className='flex items-center'>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.904 18.5H18.75m-12.846 0-.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
             </svg>
@@ -328,7 +328,7 @@ const [showPopup, setShowPopup] = useState(false);
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 3.75 18 6m0 0 2.25 2.25M18 6l2.25-2.25M18 6l-2.25 2.25m1.5 13.5c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z" />
             </svg>
             <p className='font-roboto font-normal text-sm ml-2 text-gray-700 no-underline tracking-normal leading-none'>Feeling</p>
-          </div>
+          </div> */}
         </div>
       </div>
     {/* Removed Close button */}
@@ -339,7 +339,7 @@ const [showPopup, setShowPopup] = useState(false);
 {showFloatingIcon && (
   <div>
     <button
-    className="fixed top-4 right-5 z-50 bg-green-500 text-white rounded-full p-1 shadow-md lg:hidden"
+    className="fixed top-2 right-5 z-50 bg-green-500 text-white rounded-full p-1 shadow-md lg:hidden"
     onClick={() => setShowPopup(true)}
   >
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
@@ -401,7 +401,7 @@ const [showPopup, setShowPopup] = useState(false);
           </div>
         )}
       </div>
-      <div ref={scrollRef}></div>
+      {/* <div ref={scrollRef}></div> */}
     </div>
   );
 }
