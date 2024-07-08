@@ -177,30 +177,30 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
       }
 
     return (
-        <div className="mb-2 flex flex-col justify-center mx-4 md:mx-8">
-            <div className="flex justify-end ml-1 font-roboto font-normal text-black p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
+        <div className="mb-2 flex flex-col justify-center w-full md:mx-8">
+            <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
                 <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
             </div>
 
-            <div className="post-card p-4 bg-green-50 rounded-lg border border-gray-300 shadow-md mb-4">
+            <div className="post-card p-4 bg-white md:bg-green-50 md:rounded-lg md:shadow-md border w-full border-gray-300 mb-4">
                 <div className="flex items-center py-2 md:py-4">
                     <img className="w-8 h-8 md:w-10 md:h-10 rounded-full" src={avatar} alt="avatar" />
                     <div className="flex flex-col ml-4 w-full">
-                        <p className="font-roboto font-medium pb-1 text-sm text-gray-700 tracking-normal leading-none">
+                        <p className="pb-1 font-sans font-semibold text-base md:text-sm text-gray-900 tracking-normal leading-none">
                             {businessName}
                         </p>
-                        <p className="font-roboto font-normal text-xs text-gray-500">
+                        <p className="font-sans font-normal text-xs text-gray-700">
                             Published: {timestamp}
                         </p>
                     </div>
                 </div>
-                <div className="mt-4">
-                    <p className="text-sm md:text-base font-roboto">
+                <div className="mt-1">
+                    <p className="text-base md:text-sm font-sans">
                         {isExpanded ? text : truncateText(text, wordLimit)}
                     </p>
                     {text.split(' ').length > wordLimit && (
                         <button
-                            className="text-green-200 hover:underline text-sm"
+                            className="text-gray-600 text-base hover:text-black"
                             onClick={() => setIsExpanded(!isExpanded)}
                         >
                             {isExpanded ? "... see less" : "... see more"}
@@ -209,22 +209,22 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                     {image && <img src={image} alt="Post Content" className="mt-2 w-full rounded" />}
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-1 w-full p-4 border border-gray-300 rounded-lg my-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-1 w-full p-4 border bg-green-50 border-gray-300 rounded-lg my-4'>
                     <div className='flex'>
-                        <p className="text-sm md:text-base font-medium font-roboto text-gray-700 mr-2">Location:</p>
-                        <span className='text-sm md:text-base text-gray-700'>{location}</span>
+                        <p className="text-base md:text-sm font-medium font-sans text-gray-700 mr-2">Location:</p>
+                        <span className='text-base md:text-sm text-gray-700'>{location}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Retail Price:</p>
-                        <span className='text-sm md:text-base text-gray-700'>Kshs {retailPrice}</span>
+                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Retail Price:</p>
+                        <span className='text-base md:text-sm text-gray-700'>Kshs {retailPrice}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Date of expiry:</p>
-                        <span className='text-sm md:text-base text-gray-700'>{expiryDate}</span>
+                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Date of expiry:</p>
+                        <span className='text-base md:text-sm text-gray-700'>{expiryDate}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-sm md:text-base font-medium mr-2 font-roboto text-gray-700">Cross_Sale Price:</p>
-                        <span className='text-sm md:text-base text-gray-700'>Kshs {crossSalePrice}</span>
+                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Cross_Sale Price:</p>
+                        <span className='text-base md:text-sm text-gray-700'>Kshs {crossSalePrice}</span>
                     </div>
                 </div>
 
@@ -233,7 +233,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-tooltip-id="purchase-tooltip" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                         </svg>
-                        <span className="text-xs md:text-sm font-normal ml-1">Purchase Product</span>
+                        <span className="text-base md:text-sm font-normal font-sans ml-1">Purchase Product</span>
                     </button>
 
                     <Tooltip
@@ -248,7 +248,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                         </svg>
-                        <span className="text-xs md:text-sm font-normal ml-1">Message Seller</span>
+                        <span className="text-base md:text-sm font-normal ml-1">Message Seller</span>
                     </button>
                 </div>
 

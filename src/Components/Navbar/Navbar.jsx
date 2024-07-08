@@ -42,7 +42,7 @@ const Navbar = () => {
 
     return (
         <div>
-            <nav className='sticky top-0 bg-white-500 p-1 sm:py-3 border-b-1 border-gray-200 shadow-md'>
+            <nav className='sticky top-0 bg-white-500 p-1  border-b-1 border-gray-200 shadow-md'>
                 <div className="flex items-center justify-between mx-6 mr-24">
                     <div className='flex gap-4 sm:flex-row items-center'>
                         <div className='text-green-700 text-2xl font-bold sm:ml-16 flex-shrink-0  sm:mb-0'>

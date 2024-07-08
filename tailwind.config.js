@@ -5,7 +5,7 @@ module.exports = withMT({
   theme: {
     extend: {},
     fontFamily: {
-      roboto: ["Roboto", "sans-serif"],
+      sans: ["Source Sans Pro", "sans-serif"],
     },
     fontSize: {
       'xs': '0.75rem', // 12px (default)
