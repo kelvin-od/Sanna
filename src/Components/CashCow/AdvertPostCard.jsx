@@ -178,10 +178,10 @@ const AdvertPostCard = ({ id, uid, retailPrice, logo, businessName, crossSalePri
 
     return (
         <div className="flex flex-col justify-center md:mx-8">
-            <div className="post-card p-4 bg-white md:bg-green-100 md:rounded-lg md:shadow-sm border w-full border-green-300">
-                <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2 rounded-sm text-xs no-underline tracking-normal leading-none">
+            <div className="post-card p-4 bg-white md:bg-green-100 md:rounded-lg md:shadow-sm border w-full md:border-green-300">
+                {/* <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2 rounded-sm text-xs no-underline tracking-normal leading-none">
                     <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
-                </div>
+                </div> */}
                 <div className="flex items-center py-2 md:pb-2">
                     <img
                         className="w-8 h-8 rounded-full"
@@ -195,6 +195,9 @@ const AdvertPostCard = ({ id, uid, retailPrice, logo, businessName, crossSalePri
                         </p>
                         <p className="font-sans font-normal text-xs text-gray-700">
                             Published: {timestamp}
+                        </p>
+                        <p className="font-sans font-normal text-xs text-gray-700">
+                            Promoted
                         </p>
                     </div>
                 </div>

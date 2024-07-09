@@ -5,7 +5,7 @@ import avatar from "../../Assets/Images/avatar.avif";
 import { AuthContext } from "../AppContext/AppContext";
 
 const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, parentId, postId }) => {
-    const { user, userData } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState(comment);
@@ -14,6 +14,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
     const [replies, setReplies] = useState([]);
     const [likes, setLikes] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
+    const [showReplies, setShowReplies] = useState(false);
+    const [replyCount, setReplyCount] = useState(0);
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -23,6 +25,7 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 setReplies(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+                setReplyCount(snapshot.docs.length);
             });
 
             return () => unsubscribe();
@@ -209,6 +212,14 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                     >
                         Reply
                     </button>
+                    {replyCount > 0 && (
+                        <button
+                            onClick={() => setShowReplies(!showReplies)}
+                            className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
+                        >
+                            {showReplies ? "Hide" : "Show"} Replies ({replyCount})
+                        </button>
+                    )}
                 </div>
                 {showReplyInput && (
                     <div className="flex flex-col mt-2">
@@ -226,7 +237,7 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                         </button>
                     </div>
                 )}
-                {replies && replies.map((reply) => (
+                {showReplies && replies && replies.map((reply) => (
                     <div key={reply.id} className="ml-6 mt-2 bg-green-50 border-y border-white">
                         <Comment
                             {...reply}
