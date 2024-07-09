@@ -12,7 +12,7 @@ const Footer = () => {
                 <span><a href="#" className='text-xs mr-2 text-gray-600'>Privacy Policy</a></span>
                 <span><a href="#" className='text-xs text-gray-600'>Our Blog</a></span>
             </div>
-            <div className=' flex justify-center h-auto  items-center gap-4'>
+            {/* <div className=' flex justify-center h-auto  items-center gap-4'>
                 <p className='font-medium text-xs'>Let's connect</p>
                 <span><a className='hover:text-green-200' href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
                     <FaFacebook />
@@ -26,7 +26,7 @@ const Footer = () => {
                 <span><a className='hover:text-green-200' href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
                     <FaInstagram />
                 </a></span>
-            </div>
+            </div> */}
         </div>
     )
 }

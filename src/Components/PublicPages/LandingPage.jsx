@@ -1,6 +1,8 @@
 import React from "react"
 import NavigationBar from "./NavigationBar"
 import Hero from "./Hero"
+import Testimonial from "./Testimonial"
+import LandingFooter from "./LandingFooter";
 
 
 const LandingPage = () => {
@@ -9,6 +11,8 @@ const LandingPage = () => {
         <div>
             <NavigationBar />
             <Hero />
+            <Testimonial />
+            <LandingFooter />
         </div>
     )
 };

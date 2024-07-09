@@ -199,7 +199,7 @@ const Main = () => {
 
   return (
     <div className='flex flex-col items-center bg-gray-200 md:bg-[#F4F2F2]'>
-      <div className='flex flex-col py-4  bg-white mx-4 md:mx-6 w-[93%] md:w-[88%] shadow-md rounded-lg border border-gray-300'>
+      <div className='flex flex-col py-4  bg-white mx-4 md:mx-6 w-full md:w-[88%] shadow-md rounded-lg border border-gray-300'>
         <div className='flex items-center border-b border-green-50 pb-4 pl-4 w-full '>
           <img sizes='sm' className='w-[2rem] rounded-full' variant="circular" src={user?.photoURL || avatar} alt="avatar" />
           <form className='w-full' action="" onSubmit={handleSubmitPost}>

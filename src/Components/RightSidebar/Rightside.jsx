@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'
-import edu from "../../Assets/Images/educa.jfif"
+import eco from "../../Assets/Images/eco.jpg"
 import Footer from '../Footer/Footer';
 import avatar from "../../Assets/Images/avatar.avif"
 import { Link } from 'react-router-dom';
@@ -44,11 +44,12 @@ const Rightside = () => {
     <div >
       <div className='flex flex-col bg-white border border-gray-300 rounded-md h-auto shadow-lg'>
         <div className='flex flex-col items-center relative'>
-          <img className='w-full h-38 rounded-md' src={edu} alt="edu" />
+          <img className='w-full h-38 rounded-md' src={eco} alt="edu" />
         </div>
-        <p className='font-normal text-xs text-black max-m-fit no-underline tracking-normal leading-tight py-2 mx-5 mt-4'>
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolore sit praesentium voluptas natus quam voluptates animi quia sapiente nihil quas velit,
-          autem illo facilis reiciendis perspiciatis, ipsam tenetur fugiat accusantium.
+        <p className='font-normal text-sm text-black max-m-fit no-underline tracking-normal leading-tight py-2 mx-5 mt-2'>
+          Welcome to Sanna, your ultimate platform for learning, networking, and education.
+          At Sanna, you can not only expand your knowledge and connections but also seize the opportunity
+          to enhance your income and recover revenue lost to expiring products.
         </p>
 
         <div className='mx-6 mt-5'>
@@ -71,7 +72,7 @@ const Rightside = () => {
                   key={friend.id}
                 >
                   <Link to={`/profile/${friend.id}`}>
-                    <div className="flex items-center my-2 cursor-pointer">
+                    <div className="flex items-center my-5 cursor-pointer">
                       <div className="flex items-center">
                         <img className='w-[1.5rem] rounded-full' src={friend?.image || avatar} alt="avatar" />
                         <p className="ml-4 font-roboto font-medium text-sm text-gray-700 no-underline tracking-normal leading-none">
@@ -90,7 +91,7 @@ const Rightside = () => {
               );
             })
           ) : (
-            <p className="mt-10 font-roboto font-medium text-sm text-gray-700 no-underline tracking-normal leading-none">
+            <p className="my-10 font-roboto font-medium text-sm text-gray-700 no-underline tracking-normal leading-none">
               Add friends to check their profile
             </p>
           )}
