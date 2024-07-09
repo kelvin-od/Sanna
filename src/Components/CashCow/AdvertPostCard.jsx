@@ -9,7 +9,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 const stripePromise = loadStripe('pk_test_51PZd0vJIpuZzEOXAgFWUKMSHgwdzAshclJ5lvrMBFSDc9Vz8d22JMmHxooR9GYo0JJZlSKbhLK9ggo1BtzTp6OV500sHrWgIgO'); // Replace with your actual Stripe publishable key
 
-const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, location, expiryDate, name, image, text, timestamp }) => {
+const AdvertPostCard = ({ id, uid, retailPrice, logo, businessName, crossSalePrice, location, expiryDate, name, image, text, timestamp }) => {
     const { user } = useContext(AuthContext);
     const [isMessagePopupVisible, setIsMessagePopupVisible] = useState(false);
     const [message, setMessage] = useState("");
@@ -171,20 +171,24 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
     const truncateText = (text, wordLimit) => {
         const words = text.split(' ');
         if (words.length > wordLimit) {
-          return words.slice(0, wordLimit).join(' ') + '...';
+            return words.slice(0, wordLimit).join(' ') + '...';
         }
         return text;
-      }
+    }
 
     return (
-        <div className="mb-2 flex flex-col justify-center md:mx-8">
-            <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
-                <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
-            </div>
+        <div className="flex flex-col justify-center md:mx-8">
+            <div className="post-card p-4 bg-white md:bg-green-100 md:rounded-lg md:shadow-sm border w-full border-green-300">
+                <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2 rounded-sm text-xs no-underline tracking-normal leading-none">
+                    <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
+                </div>
+                <div className="flex items-center py-2 md:pb-2">
+                    <img
+                        className="w-8 h-8 rounded-full"
+                        src={user?.uid === uid && user.photoURL ? user.photoURL : (logo || avatar)}
+                        alt="avatar"
+                    />
 
-            <div className="post-card p-4 bg-white md:bg-green-50 md:rounded-lg md:shadow-md border w-full border-gray-300 mb-4">
-                <div className="flex items-center py-2 md:py-4">
-                    <img className="w-8 h-8 md:w-10 md:h-10 rounded-full" src={avatar} alt="avatar" />
                     <div className="flex flex-col ml-4 w-full">
                         <p className="pb-1 font-sans font-semibold text-base md:text-sm text-gray-900 tracking-normal leading-none">
                             {businessName}

@@ -198,9 +198,9 @@ const Main = () => {
 
 
   return (
-    <div className='flex flex-col items-center bg-gray-200 md:bg-white'>
-      <div className='flex flex-col py-4  bg-gray-200 mx-4 md:mx-8 w-[93%] md:w-[88%] shadow-md rounded-lg border border-gray-300'>
-        <div className='flex items-center border-b border-white pb-4 pl-4 w-full '>
+    <div className='flex flex-col items-center bg-gray-200 md:bg-[#F4F2F2]'>
+      <div className='flex flex-col py-4  bg-white mx-4 md:mx-6 w-[93%] md:w-[88%] shadow-md rounded-lg border border-gray-300'>
+        <div className='flex items-center border-b border-green-50 pb-4 pl-4 w-full '>
           <img sizes='sm' className='w-[2rem] rounded-full' variant="circular" src={user?.photoURL || avatar} alt="avatar" />
           <form className='w-full' action="" onSubmit={handleSubmitPost}>
             <div className='flex justify-between items-center'>
@@ -209,7 +209,7 @@ const Main = () => {
                   className='outline-none w-full bg-white border border-gray-200 rounded-md font-normal text-sm'
                   type="text"
                   name='text'
-                  placeholder={`What are you Cross-selling today? ${user?.displayName?.split(" ")[0] ||
+                  placeholder={`Share some knowledge about farming/agriculture ${user?.displayName?.split(" ")[0] ||
                     userData?.name?.charAt(0).toUpperCase() +
                     userData?.name?.slice(1)
                     }`}
@@ -224,7 +224,7 @@ const Main = () => {
                   ></img>
                 )}
               </div>
-              <div className='mr-4'>
+              <div className='mr-3'>
                 <button className='bg-green-500 py-1 px-4 text-white text-sm rounded-xs' type='submit'>Share</button>
               </div>
             </div>
@@ -246,9 +246,9 @@ const Main = () => {
                 style={{ display: 'none' }}
                 onChange={handleUpload} />
             </label>
-            {file && (<button onClick={submitImage}>Upload</button>)}
+            {file && (<button className='text-sm' onClick={submitImage}>Upload</button>)}
           </div>
-          <div className='flex items-center'>
+          {/* <div className='flex items-center'>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.904 18.5H18.75m-12.846 0-.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
             </svg>
@@ -259,7 +259,7 @@ const Main = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 3.75 18 6m0 0 2.25 2.25M18 6l2.25-2.25M18 6l-2.25 2.25m1.5 13.5c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z" />
             </svg>
             <p className='font-roboto font-normal text-sm ml-2 text-gray-700 no-underline tracking-normal leading-none'>Feeling</p>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -357,7 +357,7 @@ const Main = () => {
             </div>
           </div>
         ) : (
-          <div>
+          <div className='space-y-2'>
             {combinedPosts.length > 0 &&
               combinedPosts.map((post, index) => {
                 if (post.retailPrice) {

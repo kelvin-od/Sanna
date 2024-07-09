@@ -49,7 +49,7 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
       await updateDoc(data, {
         friends: arrayUnion({
           id: uid,
-          image: logo,
+          image: user.photoURL,
           name: name,
         }),
       });
@@ -175,7 +175,12 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
     <div className="flex flex-col mb-4 md:mx-8 flex justify-center">
       <div className="flex flex-col py-4 bg-white border border-gray-300 md:rounded-md w-full md:max-w-2xl md:shadow-md">
         <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
-          <img className="w-8 h-8 rounded-full" src={user?.photoURL || avatar} alt="avatar" />
+          <img
+            className="w-8 h-8 rounded-full"
+            src={user?.uid === uid ? user?.photoURL : logo || avatar}
+            alt="avatar"
+          />
+
           <div className="flex flex-col ml-4 w-full">
             <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
               {email}

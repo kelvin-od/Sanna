@@ -116,16 +116,16 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
     };
 
     return (
-        <div className={`flex flex-col bg-white w-full py-2 rounded-b-3xl ${open ? '' : 'hidden'}`}>
-            <div className="flex items-center">
+        <div className={`flex flex-col bg-white w-full py-2 rounded-lg ${open ? '' : 'hidden'}`}>
+            <div className="flex items-center mb-1">
                 <div className="mx-2">
                     <img className="w-[2rem] rounded-full" src={user?.photoURL || avatar} alt="avatar" />
                 </div>
                 <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
-                    <textarea ref={comment} className="bg-green-50 w-full px-2 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
+                    <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
                     
                 </div>
-                <button className="p-2 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
+                <button className="p-2 mr-2 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
                         Ask
                     </button>
             </div>

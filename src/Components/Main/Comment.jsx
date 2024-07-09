@@ -1,22 +1,24 @@
-import React, { useState, useEffect, useRef } from "react";
-import { doc, updateDoc, deleteDoc, getDoc, collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { doc, updateDoc, deleteDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import avatar from "../../Assets/Images/avatar.avif";
+import { AuthContext } from "../AppContext/AppContext";
 
-const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, onReply, onEdit, onDelete, parentId, postId }) => {
+const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, parentId, postId }) => {
+    const { user, userData } = useContext(AuthContext);
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState(comment);
     const [showReplyInput, setShowReplyInput] = useState(false);
     const [reply, setReply] = useState("");
     const [replies, setReplies] = useState([]);
-    const [likes, setLikes] = useState(0); // State to keep track of likes
-    const [hasLiked, setHasLiked] = useState(false); // State to keep track if the user has liked the comment
+    const [likes, setLikes] = useState(0);
+    const [hasLiked, setHasLiked] = useState(false);
     const menuRef = useRef(null);
 
     useEffect(() => {
-        if (parentId) {
-            const collectionOfReplies = collection(db, `posts/${postId}/comments/${parentId}/replies`);
+        if (id) {
+            const collectionOfReplies = collection(db, `posts/${postId}/comments/${id}/replies`);
             const q = query(collectionOfReplies, orderBy("timestamp", "asc"));
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -25,7 +27,7 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
             return () => unsubscribe();
         }
-    }, [id, parentId, postId]);
+    }, [id, postId]);
 
     const handleClick = (id) => {
         setShowOptions((prevState) => ({
@@ -57,7 +59,6 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                 if (commentDoc.exists()) {
                     await updateDoc(commentRef, { comment: newComment });
                     setIsEditing(false);
-                    onEdit(id, newComment); // Notify parent component of edit
                 } else {
                     console.error("No document to update: ", id);
                 }
@@ -74,7 +75,6 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                 : doc(db, `posts/${postId}/comments`, id);
             try {
                 await deleteDoc(commentRef);
-                onDelete(id); // Notify parent component of delete
             } catch (error) {
                 console.error("Error deleting document: ", error);
             }
@@ -85,9 +85,20 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     const handleReply = async () => {
         if (reply.trim() !== "") {
-            await onReply(reply, id); // Pass the reply text and parent comment ID
-            setReply(""); // Clear the reply input field
-            setShowReplyInput(false); // Hide the reply input field after submitting
+            try {
+                const collectionOfReplies = collection(db, `posts/${postId}/comments/${id}/replies`);
+                await addDoc(collectionOfReplies, {
+                    comment: reply,
+                    name: user.displayName, 
+                    image: user.photoURL, 
+                    uid: user.uid,
+                    timestamp: new Date(),
+                });
+                setReply("");
+                setShowReplyInput(false);
+            } catch (error) {
+                console.error("Error adding reply: ", error);
+            }
         }
     };
 
@@ -120,7 +131,6 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                 const commentDoc = await getDoc(commentRef);
                 if (commentDoc.exists()) {
                     setLikes(commentDoc.data().likes || 0);
-                    // Check if the user has liked the comment (assuming a `likedBy` field containing user IDs)
                     const likedBy = commentDoc.data().likedBy || [];
                     setHasLiked(likedBy.includes(loggedInUserId));
                 }
@@ -193,16 +203,14 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                     <button onClick={handleLike} className="text-xs text-gray-500 ml-2 focus:outline-none mt-2">
                         {hasLiked ? "Unlike" : "Like"} ({likes})
                     </button>
-                    {!parentId && (
-                        <button
-                            onClick={() => setShowReplyInput(!showReplyInput)}
-                            className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
-                        >
-                            Reply
-                        </button>
-                    )}
+                    <button
+                        onClick={() => setShowReplyInput(!showReplyInput)}
+                        className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
+                    >
+                        Reply
+                    </button>
                 </div>
-                {showReplyInput && !parentId && (
+                {showReplyInput && (
                     <div className="flex flex-col mt-2">
                         <textarea
                             value={reply}
@@ -219,17 +227,13 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                     </div>
                 )}
                 {replies && replies.map((reply) => (
-                    <div key={reply.id} className="ml-6 mt-2">
+                    <div key={reply.id} className="ml-6 mt-2 bg-green-50 border-y border-white">
                         <Comment
                             {...reply}
-                            userId={reply.uid}
                             loggedInUserId={loggedInUserId}
                             postAuthorId={postAuthorId}
-                            onReply={onReply}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            parentId={id} // Pass the parent comment's ID as parentId for replies
-                            postId={postId} // Pass postId to child comments
+                            parentId={id}
+                            postId={postId}
                         />
                     </div>
                 ))}

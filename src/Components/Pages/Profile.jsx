@@ -1,11 +1,21 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
-import { AuthContext } from "../AppContext/AppContext";
-import { db, storage } from "../firebase/firebase";
-import { doc, setDoc, getDoc, collection, query, where, onSnapshot } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import PostCard from "../Main/PostCard";
+import { AuthContext } from '../AppContext/AppContext';
+import { db, storage } from '../firebase/firebase';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  updateDoc, // Import updateDoc from firebase/firestore
+} from 'firebase/firestore'; // Make sure updateDoc is imported
+
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import PostCard from '../Main/PostCard';
 
 const Profile = () => {
   const { user, userData } = useContext(AuthContext);
@@ -15,7 +25,7 @@ const Profile = () => {
     businessName: '',
     businessEmail: '',
     businessPhone: '',
-    profilePicture: ''
+    profilePicture: '',
   });
   const [userPosts, setUserPosts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +34,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfileDetails = async () => {
       if (user) {
-        const docRef = doc(db, "users", user.uid);
+        const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setProfileDetails(docSnap.data());
@@ -35,7 +45,7 @@ const Profile = () => {
             businessName: '',
             businessEmail: '',
             businessPhone: '',
-            profilePicture: ''
+            profilePicture: '',
           });
         }
       }
@@ -43,10 +53,10 @@ const Profile = () => {
 
     const fetchUserPosts = async () => {
       if (user) {
-        const postsCollection = collection(db, "posts");
-        const q = query(postsCollection, where("uid", "==", user.uid));
+        const postsCollection = collection(db, 'posts');
+        const q = query(postsCollection, where('uid', '==', user.uid));
         onSnapshot(q, (snapshot) => {
-          setUserPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          setUserPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
         });
       }
     };
@@ -57,9 +67,9 @@ const Profile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfileDetails(prevDetails => ({
+    setProfileDetails((prevDetails) => ({
       ...prevDetails,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -77,14 +87,14 @@ const Profile = () => {
         profilePictureUrl = await getDownloadURL(uploadTask.ref);
       }
       const updatedProfileDetails = { ...profileDetails, profilePicture: profilePictureUrl };
-      const docRef = doc(db, "users", user.uid);
+      const docRef = doc(db, 'users', user.uid);
       try {
-        await setDoc(docRef, updatedProfileDetails);
+        await updateDoc(docRef, updatedProfileDetails); // Use updateDoc instead of setDoc
         setProfileDetails(updatedProfileDetails);
         alert('Profile updated successfully');
         setIsEditing(false);
       } catch (error) {
-        console.error("Error updating profile: ", error);
+        console.error('Error updating profile: ', error);
         alert('Error updating profile');
       }
     }
@@ -115,26 +125,6 @@ const Profile = () => {
               Edit Profile
             </button>
           </div>
-          {/* <div className="mt-4">
-            {userPosts.length > 0 ? (
-              userPosts.map(post => (
-                <PostCard
-                  key={post.id}
-                  logo={post.logo}
-                  id={post.id}
-                  uid={post.uid}
-                  name={post.name}
-                  email={post.email}
-                  image={post.image}
-                  text={post.text}
-                  timestamp={new Date(post.timestamp?.toDate()).toUTCString()}
-                  profilePicture={profileDetails.profilePicture}
-                />
-              ))
-            ) : (
-              <p>No posts yet</p>
-            )}
-          </div> */}
         </div>
 
         {/* User details */}
@@ -161,108 +151,105 @@ const Profile = () => {
         </div>
       </section>
 
-      <div className="hidden md:block w-full bg-white mt-8">
-        <Footer />
-      </div>
-
       {isEditing && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-4 md:p-6 rounded shadow-lg max-w-md w-full">
-      <h2 className="text-lg md:text-xl font-medium mb-4 text-center">Edit Profile</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-3">
-            <h3 className="text-base md:text-lg font-medium">Personal Details</h3>
-            <label className="block">
-              <span className="text-xs md:text-sm">Name:</span>
-              <input
-                className="border p-2 rounded"
-                type="text"
-                name="name"
-                value={profileDetails.name}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs md:text-sm">Email:</span>
-              <input
-                className="border p-2 rounded"
-                type="email"
-                value={user.email || userData.email}
-                readOnly
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs md:text-sm">Personal Phone:</span>
-              <input
-                className="border p-2 rounded"
-                type="text"
-                name="personalPhone"
-                value={profileDetails.personalPhone}
-                onChange={handleInputChange}
-              />
-            </label>
-          </div>
-          <div className="flex flex-col gap-3">
-            <h3 className="text-base md:text-lg font-medium">Business Details</h3>
-            <label className="block">
-              <span className="text-xs md:text-sm">Business Name:</span>
-              <input
-                className="border p-2 rounded"
-                type="text"
-                name="businessName"
-                value={profileDetails.businessName}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs md:text-sm">Business Email:</span>
-              <input
-                className="border p-2 rounded"
-                type="email"
-                name="businessEmail"
-                value={profileDetails.businessEmail}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs md:text-sm">Business Phone:</span>
-              <input
-                className="border p-2 rounded"
-                type="text"
-                name="businessPhone"
-                value={profileDetails.businessPhone}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs md:text-sm">Profile Picture:</span>
-              <input
-                className="border p-2 rounded"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </label>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 md:p-6 rounded shadow-lg max-w-md w-full">
+            <h2 className="text-lg md:text-xl font-medium mb-4 text-center">Edit Profile</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-base md:text-lg font-medium">Personal Details</h3>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Name:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="text"
+                      name="name"
+                      value={profileDetails.name}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Email:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="email"
+                      value={user.email || userData.email}
+                      readOnly
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Personal Phone:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="text"
+                      name="personalPhone"
+                      value={profileDetails.personalPhone}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-base md:text-lg font-medium">Business Details</h3>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Business Name:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="text"
+                      name="businessName"
+                      value={profileDetails.businessName}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Business Email:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="email"
+                      name="businessEmail"
+                      value={profileDetails.businessEmail}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Business Phone:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="text"
+                      name="businessPhone"
+                      value={profileDetails.businessPhone}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs md:text-sm">Profile Picture:</span>
+                    <input
+                      className="border p-2 rounded"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-end mt-4">
+                <button
+                  className="bg-gray-300 text-sm text-gray-800 py-2 px-4 rounded hover:bg-gray-400"
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </button>
+                <button className="bg-green-500 text-sm text-white py-2 px-4 rounded hover:bg-green-600" type="submit">
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-        <div className="flex justify-end mt-4">
-          <button
-            className="bg-gray-300 text-sm text-gray-800 py-2 px-4 rounded hover:bg-gray-400"
-            type="button"
-            onClick={() => setIsEditing(false)}
-          >
-            Cancel
-          </button>
-          <button className="bg-green-500 text-sm text-white py-2 px-4 rounded hover:bg-green-600" type="submit">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
+      <Footer />
     </div>
   );
 };
