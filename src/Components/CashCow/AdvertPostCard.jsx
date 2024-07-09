@@ -177,7 +177,7 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
       }
 
     return (
-        <div className="mb-2 flex flex-col justify-center w-full md:mx-8">
+        <div className="mb-2 flex flex-col justify-center md:mx-8">
             <div className="flex justify-end ml-1 font-sans font-normal text-black md:p-2  rounded-sm text-xs no-underline tracking-normal leading-none">
                 <p className="bg-green-500 py-1 px-2 rounded-sm text-white">Promoted</p>
             </div>
@@ -209,21 +209,21 @@ const AdvertPostCard = ({ id, uid, retailPrice, businessName, crossSalePrice, lo
                     {image && <img src={image} alt="Post Content" className="mt-2 w-full rounded" />}
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-1 w-full p-4 border bg-green-50 border-gray-300 rounded-lg my-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 bg-green-50 gap-1 w-full p-4 border border-gray-300 rounded-lg my-4'>
                     <div className='flex'>
-                        <p className="text-base md:text-sm font-medium font-sans text-gray-700 mr-2">Location:</p>
+                        <p className="text-base md:text-sm font-semibold font-sans text-gray-700 mr-2">Location:</p>
                         <span className='text-base md:text-sm text-gray-700'>{location}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Retail Price:</p>
+                        <p className="text-base md:text-sm font-semibold mr-2 font-sans text-gray-700">Retail Price:</p>
                         <span className='text-base md:text-sm text-gray-700'>Kshs {retailPrice}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Date of expiry:</p>
+                        <p className="text-base md:text-sm font-semibold mr-2 font-sans text-gray-700">Date of expiry:</p>
                         <span className='text-base md:text-sm text-gray-700'>{expiryDate}</span>
                     </div>
                     <div className='flex'>
-                        <p className="text-base md:text-sm font-medium mr-2 font-sans text-gray-700">Cross_Sale Price:</p>
+                        <p className="text-base md:text-sm font-semibold mr-2 font-sans text-gray-700">Cross_Sale Price:</p>
                         <span className='text-base md:text-sm text-gray-700'>Kshs {crossSalePrice}</span>
                     </div>
                 </div>

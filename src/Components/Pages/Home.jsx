@@ -7,19 +7,19 @@ import Main from '../Main/Main';
 
 const Home = () => {
   return (
-    <div className='w-full'>
+    <div className='w-full flex flex-col'>
       <div className="fixed top-0 z-10 w-full bg-white">
         <Navbar />
       </div>
-      <div className='flex flex-col lg:flex-row pt-24'>
-        <div className='w-full lg:w-[17%] lg:fixed top-24 lg:ml-24'>
+      <div className='flex-grow flex flex-col lg:flex-row pt-24'>
+        <div className='w-full lg:w-[17%] lg:fixed top-24 lg:ml-24 h-full'>
           <Leftside />
         </div>
-        <div className='w-full lg:w-[45%] lg:ml-[25%] rounded-xl mt-4 lg:mt-0'>
+        <div className='w-full lg:w-[45%] lg:ml-[25%] rounded-xl mt-4 lg:mt-0 h-full'>
           <Main />
         </div>
-        <div className='w-full lg:w-[21%] lg:ml-4 lg:mr-4 mt-4 lg:mt-0'>
-          <div className='relative'>
+        <div className='w-full lg:w-[21%] lg:ml-4 lg:mr-4 mt-4 lg:mt-0 h-full'>
+          <div className='relative h-full'>
             <Rightside />
           </div>
           <div className='sticky top-20 mt-4 lg:mt-0'>

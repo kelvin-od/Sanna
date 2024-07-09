@@ -140,12 +140,12 @@ const Messaging = () => {
             </div>
             <div className="flex flex-1 mt-16 p-4 flex-col md:flex-row">
                 <div className="md:w-1/4 p-4 border-r md:border-r-0 md:border-b">
-                    <h2 className="font-medium mb-4 text-sm">Conversations</h2>
+                    <h2 className="font-medium mb-4 text-base font-semibold md:text-sm">Conversations</h2>
                     {conversations.map((convo) => (
                         <div
                             key={convo.uid}
                             onClick={() => handleUserClick(convo)}
-                            className="cursor-pointer p-2 hover:bg-gray-200 rounded text-sm"
+                            className="cursor-pointer p-1 hover:bg-gray-200 rounded font-medium text-base md:text-sm"
                         >
                             {convo.name}
                         </div>
@@ -154,12 +154,12 @@ const Messaging = () => {
                 <div className="flex-1 p-4">
                     {selectedUser ? (
                         <div className="flex flex-col h-full">
-                            <h2 className="font-medium mb-4 text-sm">Conversation with {selectedUser.name}</h2>
+                            <h2 className="mb-4 text-base font-semibold md:text-sm">Conversation with {selectedUser.name}</h2>
                             <div className="flex-1 border p-4 mb-4 overflow-y-auto w-full md:w-[60%] shadow-lg rounded-lg">
                                 <div className="custom-scrollbar" style={{ minHeight: '300px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
                                     {messages.map((msg) => (
                                         <div key={msg.id} className="mb-2 flex flex-col pr-5">
-                                            <div className={`p-1 text-sm rounded inline-block mb-2 ${msg.senderId === user.uid ? 'bg-green-100 self-end' : 'bg-gray-200 self-start'}`}>
+                                            <div className={`p-1 text-base md:text-sm rounded inline-block mb-2 ${msg.senderId === user.uid ? 'bg-green-100 self-end' : 'bg-gray-200 self-start'}`}>
                                                 {msg.text}
                                             </div>
                                             {msg.replies.map((reply) => (
@@ -174,7 +174,7 @@ const Messaging = () => {
                                 </div>
                             </div>
 
-                            <div className="flex w-full md:w-[60%]">
+                            <div className="flex w-full mb-16 md:w-[60%]">
                                 <textarea
                                     className="flex-1 border p-1 rounded text-sm"
                                     rows="1"
@@ -187,7 +187,7 @@ const Messaging = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className='text-sm'>Select a conversation to view</div>
+                        <div className='text-base font-semibold md:text-sm'>Select a conversation to view</div>
                     )}
                 </div>
             </div>
