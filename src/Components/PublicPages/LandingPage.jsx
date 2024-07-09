@@ -8,7 +8,7 @@ import LandingFooter from "./LandingFooter";
 const LandingPage = () => {
 
     return (
-        <div>
+        <div className="bg-white">
             <NavigationBar />
             <Hero />
             <Testimonial />
