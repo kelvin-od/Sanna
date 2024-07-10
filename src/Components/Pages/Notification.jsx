@@ -147,7 +147,7 @@ const Notification = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white">
       <Navbar /> {/* Ensure Navbar is rendered at the bottom */}
       <div className="flex-grow flex flex-col mt-10 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
         <h1 className="text-2xl font-medium mb-2">Notifications</h1>

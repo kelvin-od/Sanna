@@ -48,17 +48,17 @@ const Leftside = ({ profilePicture, userData }) => {
   return (
     <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-sm lg:w-full md:w-1/2 sm:w-full'>
       <div className='flex flex-col items-center relative'>
-        <img className='h-25 sm:h-30 w-full rounded-t-md' src={profileDetails.profileCover || cover} alt="profile_image" />
+        <img className='h-20 sm:h-30 w-full rounded-t-md' src={profileDetails.profileCover || cover} alt="profile_image" />
         <div className='absolute -bottom-8'>
-          <img className='rounded-full h-16 w-16' src={profileDetails.profilePicture } alt="avatar" />
+          <img className='rounded-full h-14 w-14' src={profileDetails.profilePicture } alt="avatar" />
         </div>
       </div>
       <div className='flex flex-col items-center pt-12'>
-        <p className='font-roboto font-semibold text-md text-gray-600 no-underline tracking-normal leading-none'>
+        <p className='font-roboto font-semibold text-md text-gray-900 no-underline tracking-normal leading-none'>
           {profileDetails.firstName || userData?.firstName} {profileDetails.secondName || userData?.secondName}
         </p>
         <p className='font-roboto text-sm text-gray-600 no-underline tracking-normal leading-none py-2'>
-          {profileDetails.businessName || userData?.businessName}
+          <span className='font-semibold'>Company Name: </span>{profileDetails.businessName || userData?.businessName}
         </p>
         <p className='text-xs text-gray-600 no-underline tracking-normal leading-none mx-4 text-center'>
           {profileDetails.businessDescription}

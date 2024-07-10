@@ -185,15 +185,18 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     return (
         <div className="flex items-start mt-2 w-full relative">
             <div className="mx-2">
-                <img className="w-[2rem] mr-4 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
+                <img className="w-5 h-5 mr-4 mt-2 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
             </div>
 
             <div className="flex flex-col bg-green-50 rounded-lg p-1 mr-5 w-full max-w-[600px] relative">
                 <div className="flex justify-between w-full">
                     <div>
-                        <p className="text-black text-xs no-underline tracking-normal leading-none p-1 font-medium">
-                            {name}
-                        </p>
+                    <p className="text-black text-xs no-underline tracking-normal leading-none p-1 font-medium">
+    {profileDetails.firstName && profileDetails.secondName
+        ? `${profileDetails.firstName} ${profileDetails.secondName}`
+        : name}
+</p>
+
                         {isEditing ? (
                             <textarea
                                 value={newComment}

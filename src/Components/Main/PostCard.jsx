@@ -236,11 +236,18 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
   };
 
   const handleCopyLink = () => {
-    const postUrl = `${window.location.origin}/post/${id}`;
-    navigator.clipboard.writeText(postUrl)
-      .then(() => alert("Post link copied to clipboard!"))
-      .catch((err) => console.error("Failed to copy link: ", err));
-  };
+  const postUrl = `${window.location.origin}/post/${id}`;
+  const postText = "Insert your post text here"; // Replace with actual post text
+  const postImageUrl = "https://example.com/image.jpg"; // Replace with actual image URL
+
+  // Construct the content to copy
+  const contentToCopy = `${postText}\n\n${postUrl}\n${postImageUrl}`;
+
+  navigator.clipboard.writeText(contentToCopy)
+    .then(() => alert("Post content copied to clipboard!"))
+    .catch((err) => console.error("Failed to copy content: ", err));
+};
+
 
   return (
     <>
@@ -261,7 +268,7 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
                 <p className="font-sans font-semibold mr-1 text-base md:text-xs text-gray-900">
                   {profileDetails.businessName} --
                 </p>
-                <p className="font-sans font-normal text-xs pt-1 text-gray-700">
+                <p className="font-sans font-normal text-xs  text-gray-700">
                   Published: {formatTimestamp(timestamp)}
                 </p>
               </div>

@@ -93,7 +93,7 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (user) {
       console.log('User UID:', user.uid);
 
@@ -106,7 +106,7 @@ const Profile = () => {
         const uploadTask = await uploadBytes(storageRef, profilePictureFile);
         profilePictureUrl = await getDownloadURL(uploadTask.ref);
       }
-      
+
       if (businessPictureFile) {
         const businessStorageRef = ref(storage, `businessPictures/${user.uid}`);
         const businessUploadTask = await uploadBytes(businessStorageRef, businessPictureFile);
@@ -118,18 +118,18 @@ const Profile = () => {
         const coverUploadTask = await uploadBytes(coverStorageRef, profileCoverFile);
         profileCoverUrl = await getDownloadURL(coverUploadTask.ref);
       }
-      
-      const updatedProfileDetails = { 
-        ...profileDetails, 
+
+      const updatedProfileDetails = {
+        ...profileDetails,
         profilePicture: profilePictureUrl,
         businessPicture: businessPictureUrl,
         profileCover: profileCoverUrl
       };
-      
+
       const docRef = doc(db, 'users', user.uid);
-      
+
       try {
-        
+
         await updateDoc(docRef, updatedProfileDetails);
         setProfileDetails(updatedProfileDetails);
         setIsEditing(false);
@@ -140,25 +140,25 @@ const Profile = () => {
       }
     }
   };
-  
-  
-  
-  
+
+
+
+
 
   if (!user || !userData) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-white">
       <div className="fixed top-0 z-10 w-full bg-white">
         <Navbar />
       </div>
 
-      <section className="flex flex-col md:flex-row gap-8 p-4 md:p-8 mt-16">
+      <section className="h-auto flex flex-col md:flex-row gap-8 p-4 md:p-8 mt-16">
         {/* User activities */}
-        <div className="flex-1 items-center">
-          <div className="flex items-center shadow p-2 w-full md:w-[87%] rounded gap-4 mx-auto">
+        <div className="flex-1 items-center ml-8">
+          <div className="flex items-center border border-gray-300 p-2 w-full md:w-[87%] rounded gap-4 mx-auto">
             {profileDetails.profilePicture && (
               <img src={profileDetails.profilePicture} alt="Profile" className="w-10 h-10 rounded-full" />
             )}
@@ -170,29 +170,60 @@ const Profile = () => {
               Edit Profile
             </button>
           </div>
+          <div className="flex items-center border border-gray-300 p-2 my-4 w-full md:w-[87%] rounded gap-4 mx-auto">
+            {profileDetails.businessPicture && (
+              <img src={profileDetails.businessPicture} alt="Profile" className="w-10 h-10 rounded-full" />
+            )}
+            <h2 className="text-sm sm:text-5xl font-medium">{profileDetails.businessName} Logo</h2>
+
+          </div>
+          <div className="flex items-center border border-gray-300 p-2 w-full md:w-[87%] rounded gap-4 mx-auto">
+            {profileDetails.profileCover && (
+              <img src={profileDetails.profileCover} alt="Profile" className="w-10 h-10 rounded-full" />
+            )}
+            <h2 className="text-sm sm:text-5xl font-medium">Your Cover Image</h2>
+
+          </div>
+
+          {/* <div className='hidden md:block md:ml-9 mt-8 bg-gray-100  px-4 py-5 border rounded-lg'>
+            <div>
+              <div className='border-b font-semibold mb-4'>
+                <p className='pb-2 text-sm'>Accounts Balances</p>
+              </div>
+              <div>
+                <p className='pb-2 text-sm'>Amount:</p>
+                <p className='pb-2 text-sm'>Amount on Escrow:</p>
+              </div>
+              <button className='text-sm border border-green-700 hover:bg-green-700 hover:text-white rounded-lg px-4 py-1 mt-4'>
+                Withdraw/Transfer Funds
+              </button>
+            </div>
+          </div> */}
+
         </div>
 
+
+
         {/* User details */}
-        <div className="flex-1 py-1 px-4 md:px-12 bg-white rounded mt-2">
-          <div className="border border-gray-300 py-6 px-4 md:px-8 bg-green-50 rounded">
-            <h2 className="text-sm font-medium mb-2">Profile Details</h2>
-            <div className="mb-4">
-              <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Personal Details</h3>
-              <div className="text-xs">
-                <p><strong>First Name:</strong> {profileDetails.firstName}</p>
-                <p><strong>Second Name:</strong> {profileDetails.secondName}</p>
-                <p><strong>Email:</strong> {user.email || userData.email}</p>
-                <p><strong>Phone:</strong> {profileDetails.personalPhone}</p>
-              </div>
+
+        <div className="flex-1 border border-gray-300 py-6 px-4 md:px-8 bg-green-50 rounded">
+          <h2 className="text-sm font-medium mb-2">Profile Details</h2>
+          <div className="mb-4">
+            <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Personal Details</h3>
+            <div className="text-xs">
+              <p><strong>First Name:</strong> {profileDetails.firstName}</p>
+              <p><strong>Second Name:</strong> {profileDetails.secondName}</p>
+              <p><strong>Email:</strong> {user.email || userData.email}</p>
+              <p><strong>Phone:</strong> {profileDetails.personalPhone}</p>
             </div>
-            <div>
-              <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Business Details</h3>
-              <div className="text-xs">
-                <p><strong>Business Name:</strong> {profileDetails.businessName}</p>
-                <p><strong>Business Description:</strong>{profileDetails.businessDescription}</p>
-                <p><strong>Business Email:</strong> {profileDetails.businessEmail}</p>
-                <p><strong>Business Phone:</strong> {profileDetails.businessPhone}</p>
-              </div>
+          </div>
+          <div>
+            <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Business Details</h3>
+            <div className="text-xs">
+              <p><strong>Business Name:</strong> {profileDetails.businessName}</p>
+              <p><strong>Business Description:</strong>{profileDetails.businessDescription}</p>
+              <p><strong>Business Email:</strong> {profileDetails.businessEmail}</p>
+              <p><strong>Business Phone:</strong> {profileDetails.businessPhone}</p>
             </div>
           </div>
         </div>
@@ -318,7 +349,7 @@ const Profile = () => {
                       onChange={handleFileChange}
                     />
                   </label>
-                  
+
                 </div>
               </div>
               <div className="flex justify-end mt-4">
@@ -338,7 +369,9 @@ const Profile = () => {
         </div>
       )}
 
-      <Footer />
+      <div className=' bottom-0'>
+        <Footer />
+      </div>
     </div>
   );
 };
