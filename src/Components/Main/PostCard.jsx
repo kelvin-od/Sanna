@@ -1,5 +1,5 @@
 import React, { useContext, useState, useReducer, useEffect, useRef } from "react";
-import avatar from "../../Assets/Images/avatar.avif";
+import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 import {
   PostsReducer,
@@ -14,6 +14,7 @@ import {
   onSnapshot,
   where,
   getDocs,
+  getDoc,
   updateDoc,
   arrayUnion,
   deleteDoc,
@@ -36,8 +37,7 @@ const FullScreenComments = ({ postId, uid, close }) => {
 };
 
 const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
-  const { user } = useContext(AuthContext);
-  console.log("User object:", user); // Added for debugging
+  const { user, userData } = useContext(AuthContext);
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const likesRef = doc(collection(db, "posts", id, "likes"));
   const likesCollection = collection(db, "posts", id, "likes");
@@ -48,6 +48,44 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
   const singlePostDocument = doc(db, "posts", id);
   const commentButtonRef = useRef(null);
   const wordLimit = 20;
+
+  const [profileDetails, setProfileDetails] = useState({
+    firstName: '',
+    secondName: '',
+    personalPhone: '',
+    businessName: '',
+    businessDescription: '',
+    businessEmail: '',
+    businessPhone: '',
+    profilePicture: '',
+    profileCover: '',
+  });
+
+  useEffect(() => {
+    const fetchProfileDetails = async () => {
+      if (uid) {
+        const docRef = doc(db, 'users', uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfileDetails(docSnap.data());
+        } else {
+          setProfileDetails({
+            firstName: '',
+            secondName: '',
+            personalPhone: '',
+            businessName: '',
+            businessEmail: '',
+            businessPhone: '',
+            profilePicture: '',
+            profileCover: '',
+            businessDescription: '',
+          });
+        }
+      }
+    };
+
+    fetchProfileDetails();
+  }, [uid]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -211,17 +249,22 @@ const PostCard = ({ uid, id, logo, name, email, text, image, timestamp }) => {
           <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
             <img
               className="w-8 h-8 rounded-full"
-              src={user?.uid === uid ? user?.photoURL : logo || avatar}
+              src={profileDetails.profilePicture  || avatar}
               alt="avatar"
             />
 
             <div className="flex flex-col ml-4 w-full">
               <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
-                {email}
+              {profileDetails.firstName} {profileDetails.secondName }
               </p>
-              <p className="font-sans font-normal text-xs text-gray-700">
-                Published: {formatTimestamp(timestamp)}
-              </p>
+              <div className="flex items-center">
+                <p className="font-sans font-semibold mr-1 text-base md:text-xs text-gray-900">
+                  {profileDetails.businessName} --
+                </p>
+                <p className="font-sans font-normal text-xs pt-1 text-gray-700">
+                  Published: {formatTimestamp(timestamp)}
+                </p>
+              </div>
             </div>
             {user?.uid !== uid && (
               <div onClick={addUser} className="cursor-pointer ml-auto">

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { doc, updateDoc, deleteDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import avatar from "../../Assets/Images/avatar.avif";
+import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 
-const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorId, parentId, postId }) => {
+const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId, parentId, postId }) => {
     const { user } = useContext(AuthContext);
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
@@ -17,6 +17,44 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
     const [showReplies, setShowReplies] = useState(false);
     const [replyCount, setReplyCount] = useState(0);
     const menuRef = useRef(null);
+
+    const [profileDetails, setProfileDetails] = useState({
+        firstName: '',
+        secondName: '',
+        personalPhone: '',
+        businessName: '',
+        businessDescription: '',
+        businessEmail: '',
+        businessPhone: '',
+        profilePicture: '',
+        profileCover: '',
+    });
+
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            if (uid) {
+                const docRef = doc(db, 'users', uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setProfileDetails(docSnap.data());
+                } else {
+                    setProfileDetails({
+                        firstName: '',
+                        secondName: '',
+                        personalPhone: '',
+                        businessName: '',
+                        businessEmail: '',
+                        businessPhone: '',
+                        profilePicture: '',
+                        profileCover: '',
+                        businessDescription: '',
+                    });
+                }
+            }
+        };
+
+        fetchProfileDetails();
+    }, [uid]);
 
     useEffect(() => {
         if (id) {
@@ -54,8 +92,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     const handleEdit = async () => {
         if (newComment.trim() !== "") {
-            const commentRef = parentId 
-                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+            const commentRef = parentId
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
                 : doc(db, `posts/${postId}/comments`, id);
             try {
                 const commentDoc = await getDoc(commentRef);
@@ -73,8 +111,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     const handleDelete = async () => {
         if (loggedInUserId === postAuthorId || loggedInUserId === userId) {
-            const commentRef = parentId 
-                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+            const commentRef = parentId
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
                 : doc(db, `posts/${postId}/comments`, id);
             try {
                 await deleteDoc(commentRef);
@@ -92,8 +130,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
                 const collectionOfReplies = collection(db, `posts/${postId}/comments/${id}/replies`);
                 await addDoc(collectionOfReplies, {
                     comment: reply,
-                    name: user.displayName, 
-                    image: user.photoURL, 
+                    name: user.displayName,
+                    image: user.photoURL,
                     uid: user.uid,
                     timestamp: new Date(),
                 });
@@ -106,8 +144,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
     };
 
     const handleLike = async () => {
-        const commentRef = parentId 
-            ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+        const commentRef = parentId
+            ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
             : doc(db, `posts/${postId}/comments`, id);
         try {
             const commentDoc = await getDoc(commentRef);
@@ -127,8 +165,8 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
 
     useEffect(() => {
         const fetchLikes = async () => {
-            const commentRef = parentId 
-                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id) 
+            const commentRef = parentId
+                ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
                 : doc(db, `posts/${postId}/comments`, id);
             try {
                 const commentDoc = await getDoc(commentRef);
@@ -147,8 +185,9 @@ const Comment = ({ name, comment, image, id, userId, loggedInUserId, postAuthorI
     return (
         <div className="flex items-start mt-2 w-full relative">
             <div className="mx-2">
-                <img className="w-[2rem] mr-4 rounded-full" src={image || avatar} alt="avatar" />
+                <img className="w-[2rem] mr-4 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
             </div>
+
             <div className="flex flex-col bg-green-50 rounded-lg p-1 mr-5 w-full max-w-[600px] relative">
                 <div className="flex justify-between w-full">
                     <div>

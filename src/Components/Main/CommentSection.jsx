@@ -1,8 +1,9 @@
-import React, { useContext, useRef, useReducer, useEffect } from "react";
-import avatar from "../../Assets/Images/avatar.avif";
+import React, { useContext, useRef, useState, useReducer, useEffect } from "react";
+import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 import {
     setDoc,
+    getDoc,
     collection,
     doc,
     serverTimestamp,
@@ -26,6 +27,45 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
     const { user, userData } = useContext(AuthContext);
     const [state, dispatch] = useReducer(PostsReducer, postsStates);
     const { ADD_COMMENT, HANDLE_ERROR } = postActions;
+
+    const [profileDetails, setProfileDetails] = useState({
+        firstName: '',
+        secondName: '',
+        personalPhone: '',
+        businessName: '',
+        businessDescription: '',
+        businessEmail: '',
+        businessPhone: '',
+        profilePicture: '',
+        profileCover: '',
+      });
+    
+      useEffect(() => {
+        const fetchProfileDetails = async () => {
+            if (user) {
+                const docRef = doc(db, 'users', uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setProfileDetails(docSnap.data());
+                } else {
+                    setProfileDetails({
+                        firstName: '',
+                        secondName: '',
+                        personalPhone: '',
+                        businessName: '',
+                        businessEmail: '',
+                        businessPhone: '',
+                        profilePicture: '',
+                        profileCover: '',
+                        businessDescription: '',
+                    });
+                }
+            }
+        };
+    
+        fetchProfileDetails();
+    }, [user, uid]);
+    
 
     const addComment = async (e) => {
         e.preventDefault();
@@ -118,9 +158,13 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
     return (
         <div className={`flex flex-col bg-white w-full py-2 rounded-lg ${open ? '' : 'hidden'}`}>
             <div className="flex items-center mb-1">
-                <div className="mx-2">
-                    <img className="w-[2rem] rounded-full" src={user?.photoURL || avatar} alt="avatar" />
+            <div className="mx-2">
+                    <img className="w-[2rem] rounded-full" src={user?.uid === uid ? profileDetails.profilePicture || avatar : avatar} alt="avatar" />
                 </div>
+
+
+
+
                 <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
                     <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
                     

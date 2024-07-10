@@ -3,7 +3,7 @@ import Navbar from "../Navbar/Navbar"
 import Leftside from '../LeftSidebar/LeftSide'
 import Rightside from '../RightSidebar/Rightside'
 import Main from '../Main/Main'
-import avatar from "../../Assets/Images/avatar.avif"
+import avatar from "../../Assets/Images/avatar.jpg"
 import profilePic from "../../Assets/Images/profilePic.jpg"
 import {
     collection,

@@ -1,9 +1,10 @@
 import React, { useContext, useRef, useState, useReducer, useEffect } from 'react';
-import avatar from "../../Assets/Images/avatar.avif";
+import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 import {
   doc,
   setDoc,
+  getDoc,
   collection,
   serverTimestamp,
   query,
@@ -41,6 +42,42 @@ const Main = () => {
   const [advertPosts, setAdvertPosts] = useState([]);
   const defaultLogo = 'path/to/default/logo.png';
   const defaultImage = 'path/to/default/image.png';
+  const [profileDetails, setProfileDetails] = useState({
+    name: '',
+    personalPhone: '',
+    businessName: '',
+    businessDescription:'',
+    businessEmail: '',
+    businessPhone: '',
+    profilePicture: '',
+    profileCover: '',
+  });
+
+  useEffect(() => {
+    const fetchProfileDetails = async () => {
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfileDetails(docSnap.data());
+        } else {
+          setProfileDetails({
+            name: user.displayName || userData?.name || '',
+            personalPhone: '',
+            businessName: '',
+            businessDescription:'',
+            businessEmail: '',
+            businessPhone: '',
+            profilePicture: '',
+            profileCover: '',
+          });
+        }
+      }
+    };
+
+    fetchProfileDetails();
+  }, [user, userData]);
+
 
 
   // State for floating icon visibility
@@ -201,7 +238,7 @@ const Main = () => {
     <div className='flex flex-col items-center bg-gray-200 md:bg-[#F4F2F2]'>
       <div className='flex flex-col py-4  bg-white mx-4 md:mx-6 w-full md:w-[88%] shadow-md rounded-lg border border-gray-300'>
         <div className='flex items-center border-b border-green-50 pb-4 pl-4 w-full '>
-          <img sizes='sm' className='w-[2rem] rounded-full' variant="circular" src={user?.photoURL || avatar} alt="avatar" />
+          <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={profileDetails.profilePicture || avatar} alt="avatar" />
           <form className='w-full' action="" onSubmit={handleSubmitPost}>
             <div className='flex justify-between items-center'>
               <div className='w-full ml-4 '>

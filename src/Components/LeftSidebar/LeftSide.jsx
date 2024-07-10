@@ -1,31 +1,67 @@
-import React, { useContext } from 'react';
-import edu from "../../Assets/Images/educa.jfif";
-import avatar from "../../Assets/Images/avatar.avif";
-import { AuthContext } from "../AppContext/AppContext";
+import React, { useEffect, useState, useContext } from 'react';
+import cover from "../../Assets/Images/coverImage.jpg";
+import avatar from "../../Assets/Images/avatar.jpg";
+import { AuthContext } from '../AppContext/AppContext';
+import { db } from '../firebase/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-const Leftside = ({ profilePicture }) => {
-  const { user, userData } = useContext(AuthContext);
+const Leftside = ({ profilePicture, userData }) => {
+  const { user } = useContext(AuthContext);
+  const [profileDetails, setProfileDetails] = useState({
+    firstName: '',
+    secondName: '',
+    personalPhone: '',
+    businessName: '',
+    businessDescription:'',
+    businessEmail: '',
+    businessPhone: '',
+    profilePicture: '',
+    profileCover: '',
+  });
 
-  // Determine the profile picture URL
-  const profilePictureUrl = profilePicture || avatar;
+  useEffect(() => {
+    const fetchProfileDetails = async () => {
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfileDetails(docSnap.data());
+        } else {
+          setProfileDetails({
+            firstName: user.displayName?.split(' ')[0] || userData?.firstName || '',
+            secondName: user.displayName?.split(' ')[1] || userData?.secondName || '',
+            personalPhone: '',
+            businessName: '',
+            businessEmail: '',
+            businessPhone: '',
+            profilePicture: '',
+            profileCover: '',
+            businessDescription: '',
+          });
+        }
+      }
+    };
+
+    fetchProfileDetails();
+  }, [user, userData]);
 
   return (
     <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-sm lg:w-full md:w-1/2 sm:w-full'>
       <div className='flex flex-col items-center relative'>
-        <img className='h-30 sm:h-30 w-full rounded-t-md' src={edu} alt="edu" />
+        <img className='h-25 sm:h-30 w-full rounded-t-md' src={profileDetails.profileCover || cover} alt="profile_image" />
         <div className='absolute -bottom-8'>
-          <img className='rounded-full h-16 w-16' src={user?.photoURL || avatar} alt="avatar" />
+          <img className='rounded-full h-16 w-16' src={profileDetails.profilePicture } alt="avatar" />
         </div>
       </div>
       <div className='flex flex-col items-center pt-12'>
-        <p className='font-roboto font-medium text-md text-gray-600 no-underline tracking-normal leading-none'>
-          {user?.displayName || userData?.name}
+        <p className='font-roboto font-semibold text-md text-gray-600 no-underline tracking-normal leading-none'>
+          {profileDetails.firstName || userData?.firstName} {profileDetails.secondName || userData?.secondName}
         </p>
         <p className='font-roboto text-sm text-gray-600 no-underline tracking-normal leading-none py-2'>
-          {user?.company || userData?.company}
+          {profileDetails.businessName || userData?.businessName}
         </p>
         <p className='text-xs text-gray-600 no-underline tracking-normal leading-none mx-4 text-center'>
-          Description of the company - Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          {profileDetails.businessDescription}
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faBell, faUser, faSignOutAlt, faHome, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AppContext/AppContext';
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
 
 const Navbar = () => {
@@ -12,6 +12,20 @@ const Navbar = () => {
     const { signOutUser, user, userData } = useContext(AuthContext);
     const [notificationCount, setNotificationCount] = useState(0);
     const navigate = useNavigate();
+    const [profileDetails, setProfileDetails] = useState({
+        firstName: '',
+        secondName: '',
+        personalPhone: '',
+        businessName: '',
+        businessEmail: '',
+        businessPhone: '',
+        profilePicture: '',
+        profileCover: '',
+        businessPicture: '',
+        businessDescription: '',
+      });
+
+      
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -39,6 +53,32 @@ const Navbar = () => {
         signOutUser();
         navigate('/');
     };
+
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+          if (user) {
+            const docRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              setProfileDetails(docSnap.data());
+            } else {
+              setProfileDetails({
+                firstName: user.displayName?.split(' ')[0] || userData?.firstName || '',
+                secondName: user.displayName?.split(' ')[1] || userData?.secondName || '',
+                personalPhone: '',
+                businessName: '',
+                businessEmail: '',
+                businessPhone: '',
+                profilePicture: '',
+                profileCover: '',
+                businessDescription: '',
+              });
+            }
+          }
+        };
+    
+        fetchProfileDetails();
+      }, [user, userData]);
 
     return (
         <div>
@@ -93,11 +133,12 @@ const Navbar = () => {
 
                     <div className='hidden md:flex items-center'>
                         <FontAwesomeIcon className='cursor-pointer mr-4 hover:text-green-700' data-tooltip-id="sign-out-tooltip" onClick={handleSignOut} icon={faSignOutAlt} />
+                        <span><img className=' hidden lg:block rounded-full h-5 w-5 mr-2' src={profileDetails.profilePicture}alt="" /></span>
                         <p className='text-sm font-roboto font-medium'>
-                            {user?.displayName === null && userData?.name !== undefined
-                                ? userData?.name?.charAt(0)?.toUpperCase() +
-                                userData?.name?.slice(1)
-                                : user?.displayName?.split(" ")[0]}
+                            {profileDetails.firstName === null && userData?.firstName !== undefined
+                                ? userData?.firstName?.charAt(0)?.toUpperCase() +
+                                userData?.firstName?.slice(1)
+                                : profileDetails.firstName?.split(" ")[0]}
                         </p>
                         <Tooltip
                             id="sign-out-tooltip"

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import eco from "../../Assets/Images/eco.jpg"
 import Footer from '../Footer/Footer';
-import avatar from "../../Assets/Images/avatar.avif"
+import avatar from "../../Assets/Images/avatar.jpg"
 import { Link } from 'react-router-dom';
 import { AuthContext } from "../AppContext/AppContext";
 // import syngenta from "../../Assets/Images/syngenta.jpg"

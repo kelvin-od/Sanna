@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
-import avatar from "../../Assets/Images/avatar.avif";
+import avatar from "../../Assets/Images/avatar.jpg";
 import { Tooltip } from 'react-tooltip';
 import { AuthContext } from "../AppContext/AppContext";
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -22,6 +22,54 @@ const AdvertPostCard = ({ id, uid, retailPrice, logo, businessName, crossSalePri
     const elements = useElements();
     const [isExpanded, setIsExpanded] = useState(false);
     const wordLimit = 15;
+
+    const [profileDetails, setProfileDetails] = useState({
+        firstName: '',
+        secondName: '',
+        personalPhone: '',
+        businessName: '',
+        businessDescription: '',
+        businessEmail: '',
+        businessPhone: '',
+        profilePicture: '',
+        businessPicture: '',
+        profileCover: '',
+    });
+
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            if (uid) {
+                const docRef = doc(db, 'users', uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    console.log("Profile details: ", docSnap.data()); // Add this line
+                    setProfileDetails(docSnap.data());
+                } else {
+                    setProfileDetails({
+                        firstName: '',
+                        secondName: '',
+                        personalPhone: '',
+                        businessName: '',
+                        businessEmail: '',
+                        businessPhone: '',
+                        profilePicture: '',
+                        profileCover: '',
+                        businessPicture: '',
+                        businessDescription: '',
+                    });
+                }
+            }
+        };
+    
+        fetchProfileDetails();
+    }, [uid]);
+
+    useEffect(() => {
+        console.log("UID: ", uid); // Add this line
+        console.log("User UID: ", user?.uid); // Add this line
+    }, [user, uid]);
+    
+    
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -179,17 +227,18 @@ const AdvertPostCard = ({ id, uid, retailPrice, logo, businessName, crossSalePri
     return (
         <div className="flex flex-col justify-center md:mx-8">
             <div className="post-card p-4 bg-white md:bg-green-50 md:rounded-lg md:shadow-sm border w-full md:border-green-100">
-                
+
                 <div className="flex items-center py-2 md:pb-2">
-                    <img
-                        className="w-8 h-8 rounded-full"
-                        src={user?.uid === uid && user.photoURL ? user.photoURL : (logo || avatar)}
-                        alt="avatar"
-                    />
+                <img
+                    className="w-8 h-8 rounded-full"
+                    src={profileDetails.businessPicture || avatar}
+                    alt="avatar"
+                />
+
 
                     <div className="flex flex-col ml-4 w-full">
                         <p className="pb-1 font-sans font-semibold text-base md:text-sm text-gray-900 tracking-normal leading-none">
-                            {businessName}
+                            {profileDetails.businessName}
                         </p>
                         {/* <p className="font-sans font-normal text-xs text-gray-700">
                             Published: {timestamp}
