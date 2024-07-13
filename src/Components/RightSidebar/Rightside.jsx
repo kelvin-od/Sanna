@@ -46,14 +46,14 @@ const Rightside = () => {
         <div className='flex flex-col items-center relative'>
           <img className='w-full h-38 rounded-md' src={eco} alt="edu" />
         </div>
-        <p className='font-normal text-sm text-black max-m-fit no-underline tracking-normal leading-tight py-2 mx-5 mt-2'>
+        <p className='font-normal text-base md:text-sm text-black max-m-fit no-underline tracking-normal leading-tight py-2 mx-5 mt-2'>
           Welcome to Sanna, your ultimate platform for learning, networking, and education.
           At Sanna, you can not only expand your knowledge and connections but also seize the opportunity
           to enhance your income and recover revenue lost to expiring products.
         </p>
 
         <div className='mx-6 mt-5'>
-          <p className='font-medium text-sm text-gray-700 no-underline tracking-normal leading-none'>
+          <p className='font-medium text-base md:text-sm text-gray-700 no-underline tracking-normal leading-none'>
             Networks:
           </p>
           <input

@@ -4,7 +4,7 @@ import { db } from '../firebase/firebase';
 import { AuthContext } from "../AppContext/AppContext";
 import Navbar from '../Navbar/Navbar';
 
-const Messaging = () => {
+const Messaging = ({ advertId, uid }) => {
     const { user } = useContext(AuthContext);
     const [conversations, setConversations] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -12,10 +12,11 @@ const Messaging = () => {
     const [newMessage, setNewMessage] = useState("");
 
     useEffect(() => {
-        if (user) {
+        if (user && advertId) {
             const q = query(
                 collection(db, "messages"),
-                where("receiverId", "==", user.uid)
+                where("receiverId", "==", user.uid),
+                where("advertId", "==", advertId)
             );
 
             const unsubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -40,15 +41,16 @@ const Messaging = () => {
 
             return () => unsubscribe();
         }
-    }, [user]);
+    }, [user, advertId]);
 
     useEffect(() => {
         const fetchMessages = async () => {
-            if (selectedUser) {
+            if (selectedUser && advertId) {
                 const q = query(
                     collection(db, "messages"),
                     where("senderId", "in", [user.uid, selectedUser.uid]),
-                    where("receiverId", "in", [user.uid, selectedUser.uid])
+                    where("receiverId", "in", [user.uid, selectedUser.uid]),
+                    where("advertId", "==", advertId)
                 );
 
                 const unsubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -83,28 +85,32 @@ const Messaging = () => {
         };
 
         fetchMessages();
-    }, [selectedUser, user]);
+    }, [selectedUser, user, advertId]);
 
     const sendMessage = async () => {
-        if (newMessage.trim() === "" || !selectedUser) return;
+        if (!user || !user.uid || !uid) {
+            console.error("Current user or recipient UID is undefined");
+            return;
+        }
+
+        if (newMessage.trim() === "" || !advertId) return;
 
         const messageData = {
             senderId: user.uid,
-            receiverId: selectedUser.uid,
+            receiverId: uid,
             text: newMessage,
+            advertId: advertId,
+            read: false,
             timestamp: new Date()
         };
 
         try {
-            const docRef = await addDoc(collection(db, "messages"), messageData);
-            const messageId = docRef.id; // Get the automatically generated ID
+            await addDoc(collection(db, "messages"), messageData);
             setNewMessage("");
-
-            // Optionally, you can update state to immediately show the message
-            const messageWithId = { id: messageId, ...messageData, replies: [] };
-            setMessages([messageWithId, ...messages]);
+            alert("Message sent successfully");
         } catch (error) {
             console.error("Error sending message: ", error);
+            alert("Failed to send message");
         }
     };
 

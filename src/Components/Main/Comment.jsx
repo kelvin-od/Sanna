@@ -191,17 +191,16 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
             <div className="flex flex-col bg-green-50 rounded-lg p-1 mr-5 w-full max-w-[600px] relative">
                 <div className="flex justify-between w-full">
                     <div>
-                    <p className="text-black text-xs no-underline tracking-normal leading-none p-1 font-medium">
-    {profileDetails.firstName && profileDetails.secondName
-        ? `${profileDetails.firstName} ${profileDetails.secondName}`
-        : name}
-</p>
-
+                        <p className="text-black text-xs no-underline tracking-normal leading-none p-1 font-medium">
+                            {profileDetails.firstName && profileDetails.secondName
+                                ? `${profileDetails.firstName} ${profileDetails.secondName}`
+                                : name}
+                        </p>
                         {isEditing ? (
                             <textarea
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                className="text-black text-xs no-underline tracking-normal leading-none p-1 font-normal w-full"
+                                className="text-black font-normal text-base md:text-sm no-underline tracking-normal leading-none p-1 w-full"
                             />
                         ) : (
                             <p className="text-black text-sm no-underline tracking-normal leading-none p-1 font-normal">
@@ -268,7 +267,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                         <textarea
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
-                            className="text-black text-xs no-underline tracking-normal leading-none p-1 font-normal w-full"
+                            className="text-black text-xs no-underline rounded-lg tracking-normal leading-none p-1 font-normal w-full"
                             placeholder="Write a reply..."
                         />
                         <button
@@ -280,7 +279,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                     </div>
                 )}
                 {showReplies && replies && replies.map((reply) => (
-                    <div key={reply.id} className="ml-6 mt-2 bg-green-50 border-y border-white">
+                    <div key={reply.id} className="ml-6 mt-2 bg-green-50 font-normal text-base md:text-sm border-y border-white">
                         <Comment
                             {...reply}
                             loggedInUserId={loggedInUserId}

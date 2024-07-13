@@ -14,6 +14,7 @@ module.exports = withMT({
       'lg': '2.25rem',
       'xl': '1.875rem',
       "2xl": "1.5rem",
+      "3xl": "1.125rem",
       // You can add more custom sizes as needed
     },
   },

@@ -156,7 +156,7 @@ const Register = () => {
                     alt="google"
                     className="h-5 w-5 mr-2"
                   />
-                  Sign in with Google
+                  Sign up with Google
                 </button>
               </div>
               <div className="text-center mt-4">

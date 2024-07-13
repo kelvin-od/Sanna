@@ -38,9 +38,9 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
         businessPhone: '',
         profilePicture: '',
         profileCover: '',
-      });
-    
-      useEffect(() => {
+    });
+
+    useEffect(() => {
         const fetchProfileDetails = async () => {
             if (user) {
                 const docRef = doc(db, 'users', uid);
@@ -62,10 +62,10 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
                 }
             }
         };
-    
+
         fetchProfileDetails();
     }, [user, uid]);
-    
+
 
     const addComment = async (e) => {
         e.preventDefault();
@@ -158,20 +158,16 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
     return (
         <div className={`flex flex-col bg-white w-full py-2 rounded-lg ${open ? '' : 'hidden'}`}>
             <div className="flex items-center mb-1">
-            <div className="mx-2">
+                <div className="mx-2">
                     <img className="w-[2rem] rounded-full" src={user?.uid === uid ? profileDetails.profilePicture || avatar : avatar} alt="avatar" />
                 </div>
-
-
-
-
                 <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
                     <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
-                    
+
                 </div>
                 <button className="p-2 mr-2 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
-                        Ask
-                    </button>
+                    Ask
+                </button>
             </div>
             <div className="bg-white w-full py-1 rounded-b-3xl">
                 {state.comments.map((comment) => (

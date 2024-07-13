@@ -148,8 +148,10 @@ const Notification = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar /> {/* Ensure Navbar is rendered at the bottom */}
-      <div className="flex-grow flex flex-col mt-10 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
+      <div className="fixed top-0 z-10 w-full bg-white shadow-md">
+        <Navbar />
+      </div>
+      <div className="flex-grow flex flex-col mt-24 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
         <h1 className="text-2xl font-medium mb-2">Notifications</h1>
 
         <div className="flex justify-center space-x-4 mb-4 border-b border-gray-300">
@@ -233,16 +235,16 @@ const Notification = () => {
 
           {/* Pagination controls */}
           {totalPages > 1 && (
-            <div className="flex justify-between mt-4">
+            <div className="flex justify-between mt-2">
               <button
-                className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-4 py-1 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handlePrevPage}
                 disabled={page === 1}
               >
                 {'< Previous'}
               </button>
               <button
-                className={`px-4 py-2 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-4 py-1 border border-green-500 text-black text-sm rounded-md focus:outline-none ${page === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handleNextPage}
                 disabled={page === totalPages}
               >

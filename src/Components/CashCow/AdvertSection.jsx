@@ -6,23 +6,22 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const AdvertSection = () => {
     const { user, userData } = useContext(AuthContext);
-    const textRef = useRef(null); // Ref for the text input
+    const textRef = useRef(null);
     const [image, setImage] = useState(null);
-    const [fileName, setFileName] = useState(""); // State to manage file name display
+    const [fileName, setFileName] = useState("");
     const [retailPrice, setRetailPrice] = useState("");
     const [crossSalePrice, setCrossSalePrice] = useState("");
     const [expiryDate, setExpiryDate] = useState("");
     const [location, setLocation] = useState("");
-    const [businessName, setBusinessName] = useState("");
     const [progressBar, setProgressBar] = useState(0);
-    const [file, setFile] = useState(null); // State to handle file upload
+    const [file, setFile] = useState(null);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFile(file); // Set the selected file
+            setFile(file);
             setImage(file);
-            setFileName(file.name); // Set file name when file is selected
+            setFileName(file.name);
         }
     };
 
@@ -30,7 +29,7 @@ const AdvertSection = () => {
         e.preventDefault();
         const text = textRef.current.value.trim();
 
-        if (!text || !retailPrice || !crossSalePrice || !expiryDate || !location || !businessName) {
+        if (!text || !retailPrice || !crossSalePrice || !expiryDate || !location) {
             alert("Please fill all the fields");
             return;
         }
@@ -75,7 +74,7 @@ const AdvertSection = () => {
 
     const addPost = async (text, imageUrl) => {
         try {
-            await addDoc(collection(db, "adverts"), {
+            const docRef = await addDoc(collection(db, "adverts"), {
                 uid: user.uid,
                 text,
                 image: imageUrl,
@@ -83,9 +82,9 @@ const AdvertSection = () => {
                 crossSalePrice,
                 expiryDate,
                 location,
-                businessName,
                 timestamp: serverTimestamp(),
             });
+
             // Clear form fields after successful post
             textRef.current.value = "";
             setImage(null);
@@ -94,15 +93,17 @@ const AdvertSection = () => {
             setCrossSalePrice("");
             setExpiryDate("");
             setLocation("");
-            setBusinessName("");
             setProgressBar(0);
+
             alert("Post created successfully");
+
+            // Optionally, you can do something with advertId (e.g., pass it to AdvertPostCard component)
+            console.log("Advert created with ID: ", docRef.id);
         } catch (err) {
             console.error("Error creating post: ", err);
             alert("Error creating post");
         }
     };
-
 
     const calculateExpiryDays = () => {
         if (!expiryDate) return "";
@@ -113,25 +114,18 @@ const AdvertSection = () => {
         return daysDifference;
     };
 
-    const submitImage = () => {
-        // Placeholder function for handling image submission
-        console.log("Submit image logic goes here");
-        // You can implement further logic for handling the image submission
-    };
-
     return (
         <div className="mt-16 flex flex-col">
-            
             <form onSubmit={handleSubmit} className="new-post-form rounded-lg border border-gray-300 shadow-lg bg-white p-4 flex flex-col py-8">
-            <div className="mb-2 text-xs text-gray-500">
-                <p>Do you have products that are soon expiring, sell them off by filling this form </p>
-            </div>
-            <div className="w-full flex">
+                <div className="mb-2 text-xs text-gray-500">
+                    <p>Do you have products that are soon expiring, sell them off by filling this form </p>
+                </div>
+                <div className="w-full flex">
                     <textarea
                         className="outline-none w-full bg-white rounded-md font-normal text-sm border border-gray-300 p-2"
                         type="text"
                         placeholder={`What are you cross-selling today? ${user?.displayName?.split(" ")[0] || userData?.name?.charAt(0).toUpperCase() + userData?.name?.slice(1)}`}
-                        ref={textRef} // Connect the ref to the input element
+                        ref={textRef}
                     />
                 </div>
                 <div className="mx-4">
@@ -147,15 +141,14 @@ const AdvertSection = () => {
                 <div className="flex items-center justify-center mt-4">
                     <div>
                         <label htmlFor="upload" className="cursor-pointer items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
                             </svg>
                             <input id="upload" type="file" style={{ display: 'none' }} onChange={handleImageChange} />
                         </label>
                     </div>
-                    {file && (<button onClick={submitImage}>Upload</button>)}
+                    {file && (<button type="button">Upload</button>)}
                 </div>
-
 
                 <input
                     className="text-sm p-2 border rounded-lg my-2"
@@ -178,15 +171,6 @@ const AdvertSection = () => {
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    required
-                />
-
-                <input
-                    className="text-sm p-2 border rounded-lg my-2"
-                    type="text"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="Business Name"
                     required
                 />
 

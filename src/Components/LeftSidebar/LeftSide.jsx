@@ -47,8 +47,8 @@ const Leftside = ({ profilePicture, userData }) => {
 
   return (
     <div className='flex flex-col h-auto bg-white pb-4 border border-gray-300 rounded-md shadow-sm lg:w-full md:w-1/2 sm:w-full'>
-      <div className='flex flex-col items-center relative'>
-        <img className='h-20 sm:h-30 w-full rounded-t-md' src={profileDetails.profileCover || cover} alt="profile_image" />
+      <div className='flex flex-col items-center mt-10 md:mt-0 relative'>
+        <img className='h-28 sm:h-30 w-full rounded-t-md' src={profileDetails.profileCover || cover} alt="profile_image" />
         <div className='absolute -bottom-8'>
           <img className='rounded-full h-14 w-14' src={profileDetails.profilePicture } alt="avatar" />
         </div>
