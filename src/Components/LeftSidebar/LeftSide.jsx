@@ -58,7 +58,7 @@ const Leftside = ({ profilePicture, userData }) => {
           {profileDetails.firstName || userData?.firstName} {profileDetails.secondName || userData?.secondName}
         </p>
         <p className='font-roboto text-sm text-gray-600 no-underline tracking-normal leading-none py-2'>
-          <span className='font-semibold'>Company Name: </span>{profileDetails.businessName || userData?.businessName}
+          <span className='font-semibold'></span>{profileDetails.businessName || userData?.businessName}
         </p>
         <p className='text-xs text-gray-600 no-underline tracking-normal leading-none mx-4 text-center'>
           {profileDetails.businessDescription}

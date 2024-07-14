@@ -37,7 +37,7 @@ const FullScreenComments = ({ postId, uid, close }) => {
   );
 };
 
-const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp }) => {
+const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, image, timestamp }) => {
   console.log('Media URLs:', media);
   const { user, userData } = useContext(AuthContext);
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
@@ -250,16 +250,34 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
 
   // Function to format timestamp into a readable date string
   const formatTimestamp = (timestamp) => {
-    if (!timestamp || !(timestamp instanceof Date)) {
+    if (!timestamp) {
       return "Invalid Date";
     }
-    return timestamp.toDate().toLocaleString(); // Adjust date formatting as needed
+
+    if (timestamp.toDate) {
+      timestamp = timestamp.toDate();
+    }
+
+    let relativeTime = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    relativeTime = relativeTime.replace('about ', ''); // Remove 'about'
+
+    return relativeTime;
   };
+
+
 
   const truncateText = (text, wordLimit) => {
     const words = text.split(' ');
     if (words.length > wordLimit) {
       return words.slice(0, wordLimit).join(' ') + '...';
+    }
+    return text;
+  };
+
+
+  const truncateSummary = (text, maxLength = 100) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
     }
     return text;
   };
@@ -297,7 +315,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                   {profileDetails.businessName} --
                 </p>
                 <p className="font-sans font-normal text-xs text-gray-700">
-                  Published: {formatTimestamp(timestamp)}
+                  Published: {formatTimestamp(post.timestamp)}
                 </p>
               </div>
             </div>
@@ -323,6 +341,27 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
               )}
             </p>
 
+            <div>
+              {previewData && (
+                <a href={previewData.url} target="_blank" rel="noopener noreferrer">
+                  <div className="url-preview border w-full p-3 bg-white flex flex-col items-center">
+                    <div className='w-full'>
+                      {previewData.image && (
+                        <img src={previewData.image} alt="Preview" className="w-full mr-3 rounded-md" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold">{previewData.title}</h3>
+                      <p className="text-sm text-gray-600">
+                        {truncateSummary(previewData.description)}
+                      </p>
+                      <span className="text-blue-500 text-sm">{previewData.url}</span>
+                    </div>
+                  </div>
+                </a>
+              )}
+            </div>
+
           </div>
 
 
@@ -336,7 +375,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                       <img
                         src={media[0]}
                         alt="Media 1"
-                        className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                        className="w-full h-auto object-cover border border-gray-300 cursor-pointer"
                         onClick={() => openModal(0)}
                       />
                     ) : (
@@ -354,12 +393,12 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                 ) : media.length === 2 ? (
                   <>
                     {media.map((url, index) => (
-                      <div key={index} className="w-full sm:w-1/2 p-1 relative">
+                      <div key={index} className="w-full sm:w-1/2 relative">
                         {url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') ? (
                           <img
                             src={url}
                             alt={`Media ${index + 1}`}
-                            className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                            className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                             onClick={() => openModal(index)}
                           />
                         ) : (
@@ -368,7 +407,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                               ref={(el) => (videoRefs.current[index] = el)}
                               src={url}
                               controls
-                              className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                              className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                               onClick={() => openModal(index)}
                             />
                           </div>
@@ -378,12 +417,12 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                   </>
                 ) : (
                   <>
-                    <div className="w-[70%] mb-2 p-1 relative">
+                    <div className="w-[70%] mb-2 relative">
                       {media[0].includes('.jpg') || media[0].includes('.jpeg') || media[0].includes('.png') || media[0].includes('.gif') ? (
                         <img
                           src={media[0]}
                           alt="Media 1"
-                          className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                          className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                           onClick={() => openModal(0)}
                         />
                       ) : (
@@ -392,7 +431,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                             ref={(el) => (videoRefs.current[0] = el)}
                             src={media[0]}
                             controls
-                            className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                            className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                             onClick={() => openModal(0)}
                           />
                         </div>
@@ -401,12 +440,12 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
 
                     <div className="w-[30%] flex flex-col">
                       {media.slice(1, 3).map((url, index) => (
-                        <div key={index + 1} className="relative p-1">
+                        <div key={index + 1} className="relative">
                           {url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') ? (
                             <img
                               src={url}
                               alt={`Media ${index + 2}`}
-                              className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                              className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                               onClick={() => openModal(index + 1)}
                             />
                           ) : (
@@ -415,7 +454,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                                 ref={(el) => (videoRefs.current[index + 1] = el)}
                                 src={url}
                                 controls
-                                className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                                className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                                 onClick={() => openModal(index + 1)}
                               />
                             </div>
@@ -425,7 +464,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                     </div>
 
                     {media.length > 3 && (
-                      <div className="w-[30%] relative p-1">
+                      <div className="w-[30%] relative">
                         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
                           <span className="text-white text-2xl">+{media.length - 3}</span>
                         </div>
@@ -433,7 +472,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                           <img
                             src={media[3]}
                             alt="Media 4"
-                            className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                            className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                             onClick={() => openModal(3)}
                           />
                         ) : (
@@ -442,7 +481,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                               ref={(el) => (videoRefs.current[3] = el)}
                               src={media[3]}
                               controls
-                              className="w-full h-auto object-cover border border-gray-300 rounded-md cursor-pointer"
+                              className="w-full h-auto object-cover border border-gray-300 rounded-sm cursor-pointer"
                               onClick={() => openModal(3)}
                             />
                           </div>
@@ -471,7 +510,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
           <div className="flex items-center justify-between px-5 md:mx-8 md:px-4 border-t border-gray-200 py-2 mt-2 md:py-2">
             <div className="flex items-center space-x-2 md:space-x-4">
               <div onClick={handleLike} className="cursor-pointer flex items-center mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className={`w-6 h-6 ${state.likes.some((like) => like.id === user?.uid) ? "fill-green-700" : "fill-gray-700"} hover:fill-green-500`}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className={`w-5 h-5 ${state.likes.some((like) => like.id === user?.uid) ? "fill-green-700" : "fill-gray-700"} hover:fill-green-500`}>
                   <path d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
                 </svg>
                 <span className="ml-1 text-sm text-gray-700">
@@ -480,8 +519,8 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
               </div>
 
               <div className="cursor-pointer flex items-center" onClick={handleOpen} ref={commentButtonRef}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-6 h-6 fill-green-700 hover:fill-green-500">
-                  <path d="M12 2.25c-5.385 0-9.75 3.97-9.75 8.857 0 2.125.822 4.096 2.198 5.633a10.966 10.966 0 0 1-1.948 3.89.75.75 0 0 0 1.192.916c2.165-2.14 3.906-1.57 6.598-2.403a11.471 11.471 0 0 0 1.71.127c5.385 0 9.75-3.97 9.75-8.857S17.385 2.25 12 2.25Z" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="w-5 h-5 hover:fill-green-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                 </svg>
                 <span className="ml-1 text-sm text-gray-700">
                   {state.comments.length}
@@ -491,7 +530,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
 
             <div className="flex items-center space-x-4">
               <button onClick={handleCopyLink} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                <FaLink className="w-6 h-6 text-green-700" />
+                <FaLink className="w-4 h-4 text-green-700" />
                 <span>
                   <p className="text-base md:text-sm font-normal">Copy to Share</p>
                 </span>
@@ -505,7 +544,7 @@ const PostCard = ({ uid, id, logo, name, media, email, text, image, timestamp })
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="currentColor"
-                  className="w-6 h-6 fill-red-700 hover:fill-red-500"
+                  className="w-5 h-5 fill-red-700 hover:fill-red-500"
                 >
                   <path
                     fillRule="evenodd"
