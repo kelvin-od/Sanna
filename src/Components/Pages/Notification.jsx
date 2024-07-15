@@ -147,11 +147,13 @@ const Notification = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="fixed top-0 z-10 w-full bg-white shadow-md">
+    <>
+    <div className="fixed top-0 z-10 w-full bg-white shadow-md">
         <Navbar />
       </div>
-      <div className="flex-grow flex flex-col mt-24 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
+    <div className="flex flex-col min-h-screen bg-white">
+      
+      <div className="flex-grow flex flex-col mt-16 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
         <h1 className="text-2xl font-medium mb-2">Notifications</h1>
 
         <div className="flex justify-center space-x-4 mb-4 border-b border-gray-300">
@@ -255,6 +257,7 @@ const Notification = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -80,7 +80,7 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
                     timestamp: serverTimestamp(),
                     uid: user.uid, // Add uid of the commenter
                 });
-                await addNotification("comment", `${user.displayName} commented on your post`, uid, postId);
+                await addNotification("comment", `${user.displayName} added a question on your post`, uid, postId);
                 comment.current.value = "";
                 setOpen(false); // Close comment section after adding a comment
             } catch (err) {

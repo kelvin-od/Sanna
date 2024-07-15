@@ -13,6 +13,7 @@ import CrossSell from "./CrossSell"
 import LandingPage from "../PublicPages/LandingPage";
 import Accounts from "./Accounts"
 
+
 const Pages = () => {
   return (
     <div>

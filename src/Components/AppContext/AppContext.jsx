@@ -10,7 +10,7 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
-import { query, where, collection, getDocs, addDoc, onSnapshot } from "firebase/firestore";
+import { query, where, collection, getDocs, addDoc, doc, setDoc, onSnapshot } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
@@ -20,6 +20,7 @@ const AppContext = ({ children }) => {
   const provider = new GoogleAuthProvider();
   const [user, setUser] = useState();
   const [userData, setUserData] = useState();
+  
   const navigate = useNavigate();
 
   const signInWithGoogle = async () => {
@@ -60,24 +61,27 @@ const AppContext = ({ children }) => {
     }
   };
 
-  const registerWithEmailAndPassword = async (name, email, company, password) => {
+  const registerWithEmailAndPassword = async (name, email, password) => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       const user = res.user;
-
+  
       // Send email verification
       await sendEmailVerification(user);
-
+  
       // Store user information in Firestore
-      await addDoc(collectionUsersRef, {
+      await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         name,
-        company,
         providerId: "email/password",
         email: user.email,
         emailVerified: user.emailVerified,
+        profilePicture: '',
+        businessPicture: '',
+        profileCover: '',
+        // Add other default profile fields here if needed
       });
-
+  
       alert("Registration successful! Please verify your email before logging in.");
     } catch (err) {
       alert(err.message);

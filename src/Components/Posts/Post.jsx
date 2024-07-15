@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
 import PostCard from "../Main/PostCard";
+import CommentSection from "../Main/CommentSection"
 
 const Post = () => {
     const { postId } = useParams();
@@ -50,7 +51,7 @@ const Post = () => {
                 <Navbar />
             </div>
 
-            <div className='flex flex-col md:flex-row w-full md:px-24 mt-24 md:mt-32'>
+            <div className='flex flex-col md:flex-row w-full md:px-24 mt-24 md:mt-16'>
                 <div className='w-full md:w-1/2 px-4 py-4 mx-auto'>
                     {loading ? ( // Render loading spinner only when loading state is true
                         <div className="fixed inset-0 flex flex-col justify-center items-center bg-white">
@@ -77,6 +78,7 @@ const Post = () => {
                         )
                     )}
                 </div>
+                <CommentSection />
             </div>
 
             {/* <div className="fixed bottom-0 z-10 w-full bg-white shadow-md">

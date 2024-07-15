@@ -3,14 +3,13 @@ import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ClipLoader from "react-spinners/ClipLoader";
+import BarLoader from "react-spinners/BarLoader";
 import { AuthContext } from "../AppContext/AppContext";
 import { auth, onAuthStateChanged } from "../firebase/firebase";
-import Header from "../../Assets/Images/header.avif"
+import Header from "../../Assets/Images/header.avif";
 
 const Login = () => {
   const { signInWithGoogle, loginWithEmailAndPassword } = useContext(AuthContext);
-
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [passwordShown, setPasswordShown] = useState(false);
@@ -25,14 +24,12 @@ const Login = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         navigate("/home");
-        setLoading(false);
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     });
   }, [navigate]);
 
-  let initialValues = {
+  const initialValues = {
     email: "",
     password: "",
   };
@@ -44,30 +41,35 @@ const Login = () => {
       .min(6, "Must be at least 6 characters long")
       .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, "Password must contain at least one letter, one number, and one special character"),
   });
-  
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (e) => {
     const { email, password } = formik.values;
-    if (formik.isValid === true) {
-      loginWithEmailAndPassword(email, password);
+    if (formik.isValid) {
+      setLoading(true); // Set loading to true before starting login process
+      try {
+        await loginWithEmailAndPassword(email, password);
+      } catch (err) {
+        setLoading(false); // Ensure loading is set to false in case of error
+      }
     } else {
-      setLoading(false);
       alert("Check your input fields");
     }
-
-    console.log("formik", formik);
   };
 
-  const formik = useFormik({ initialValues, validationSchema, handleSubmit });
+  const formik = useFormik({ initialValues, validationSchema, onSubmit: handleSubmit });
 
   return (
     <>
       {loading ? (
-        <div className="flex items-center justify-center min-h-screen">
-          <ClipLoader color="#000000" size={100} speedMultiplier={0.5} />
-        </div>
+        <div className="flex flex-col justify-center items-center h-screen">
+        <p className="text-green-500 font-bold mb-4 text-lg md:text-base">Sanna</p>
+        <BarLoader
+          color="#10bc21"
+          height={4}
+          speedMultiplier={1}
+          width={150}
+        />
+      </div>
       ) : (
         <section className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-white p-6">
           <div className="hidden md:flex w-1/2 h-screen justify-end">
@@ -78,7 +80,7 @@ const Login = () => {
             <p className="text-green-500 font-bold mb-5 text-lg md:text-base">Sanna</p>
             <div className='px-6 py-8 md:px-12 md:py-8 rounded-lg border shadow bg-white w-full max-w-md'>
               <p className="text-sm md:text-base mb-4">Please Sign in to Network, learn, and Cross-Sell</p>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={formik.handleSubmit} className="space-y-6">
                 <div>
                   <label className="block mb-1 text-gray-700 text-sm md:text-base" htmlFor="email">Email</label>
                   <input
@@ -115,7 +117,7 @@ const Login = () => {
                   )}
                 </div>
 
-                <button className='w-full bg-green-500 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300'>
+                <button type="submit" className='w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-700 transition duration-300'>
                   Login
                 </button>
 

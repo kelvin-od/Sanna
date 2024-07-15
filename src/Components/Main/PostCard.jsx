@@ -518,14 +518,25 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
                 </span>
               </div>
 
-              <div className="cursor-pointer flex items-center" onClick={handleOpen} ref={commentButtonRef}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="w-5 h-5 hover:fill-green-500">
+              <div className="flex items-center">
+                <div className="cursor-pointer flex items-center " onClick={handleOpen} ref={commentButtonRef}>
+                  <div className="border rounded-full shadow-sm shadow-green-500 flex px-3 py-1 mr-2 items-center">
+                    <span className="text-sm">Question?</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="Yellow" className="h-5 w-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
+                    </svg>
+                    <span className="text-sm">Say</span>
+                  </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="w-5 h-5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                 </svg>
                 <span className="ml-1 text-sm text-gray-700">
                   {state.comments.length}
                 </span>
               </div>
+
+
             </div>
 
             <div className="flex items-center space-x-4">
