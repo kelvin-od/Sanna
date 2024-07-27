@@ -22,50 +22,11 @@ import {
 } from "../AppContext/PostReducer";
 import Comment from "./Comment";
 
-const CommentSection = ({ open, setOpen, postId, uid }) => {
+const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
     const comment = useRef("");
-    const { user, userData } = useContext(AuthContext);
+    const { user, userData, profileDetails } = useContext(AuthContext);
     const [state, dispatch] = useReducer(PostsReducer, postsStates);
     const { ADD_COMMENT, HANDLE_ERROR } = postActions;
-
-    const [profileDetails, setProfileDetails] = useState({
-        firstName: '',
-        secondName: '',
-        personalPhone: '',
-        businessName: '',
-        businessDescription: '',
-        businessEmail: '',
-        businessPhone: '',
-        profilePicture: '',
-        profileCover: '',
-    });
-
-    useEffect(() => {
-        const fetchProfileDetails = async () => {
-            if (user) {
-                const docRef = doc(db, 'users', uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setProfileDetails(docSnap.data());
-                } else {
-                    setProfileDetails({
-                        firstName: '',
-                        secondName: '',
-                        personalPhone: '',
-                        businessName: '',
-                        businessEmail: '',
-                        businessPhone: '',
-                        profilePicture: '',
-                        profileCover: '',
-                        businessDescription: '',
-                    });
-                }
-            }
-        };
-
-        fetchProfileDetails();
-    }, [user, uid]);
-
 
     const addComment = async (e) => {
         e.preventDefault();
@@ -75,12 +36,17 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
                 await setDoc(commentRef, {
                     id: commentRef.id,
                     comment: comment.current.value,
-                    image: user?.photoURL,
-                    name: userData?.name?.charAt(0)?.toUpperCase() + userData?.name?.slice(1) || user?.displayName?.split(" ")[0],
+                    image: user?.photoURL || avatar,
+                    name: userData?.name?.charAt(0)?.toUpperCase() + userData?.name?.slice(1) || user?.displayName?.split(" ")[0] || "Anonymous",
                     timestamp: serverTimestamp(),
-                    uid: user.uid, // Add uid of the commenter
+                    uid: user.uid,
                 });
-                await addNotification("comment", `${user.displayName} added a question on your post`, uid, postId);
+    
+                // Check if the comment is made by another user before adding a notification
+                if (user.uid !== uid) {
+                    await addNotification("comment", `${user.displayName} added a comment on your post`, uid, postId);
+                }
+    
                 comment.current.value = "";
                 setOpen(false); // Close comment section after adding a comment
             } catch (err) {
@@ -90,7 +56,7 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
             }
         }
     };
-
+    
     const addNotification = async (type, message, userId, postId) => {
         try {
             await addDoc(collection(db, "notifications"), {
@@ -98,12 +64,14 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
                 type,
                 postId,
                 message,
-                timestamp: new Date(),
+                timestamp: serverTimestamp(),
+                read: false // Set to false initially
             });
         } catch (err) {
             console.error("Error adding notification: ", err);
         }
     };
+    
 
     useEffect(() => {
         const collectionOfComments = collection(db, `posts/${postId}/comments`);
@@ -159,7 +127,7 @@ const CommentSection = ({ open, setOpen, postId, uid }) => {
         <div className={`flex flex-col bg-white w-full py-2 rounded-lg ${open ? '' : 'hidden'}`}>
             <div className="flex items-center mb-1">
                 <div className="mx-2">
-                    <img className="w-[2rem] rounded-full" src={user?.uid === uid ? profileDetails.profilePicture || avatar : avatar} alt="avatar" />
+                    <img className="w-[2rem] rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
                 </div>
                 <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
                     <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>

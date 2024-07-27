@@ -4,6 +4,7 @@ import Navbar from '../Navbar/Navbar';
 import { AuthContext } from '../AppContext/AppContext';
 import { collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase/firebase';
+import { Helmet } from 'react-helmet';
 
 const Notification = () => {
   const { user } = useContext(AuthContext);
@@ -16,6 +17,7 @@ const Notification = () => {
 
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     if (user) {
@@ -141,6 +143,7 @@ const Notification = () => {
   };
 
   const handlePrevPage = () => {
+    
     if (page > 1) {
       setPage(prevPage => prevPage - 1);
     }
@@ -148,12 +151,15 @@ const Notification = () => {
 
   return (
     <>
+    <Helmet>
+        <title>Notifications | Sanna</title>
+      </Helmet>
     <div className="fixed top-0 z-10 w-full bg-white shadow-md">
         <Navbar />
       </div>
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white">
       
-      <div className="flex-grow flex flex-col mt-16 mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
+      <div className="flex-grow flex flex-col mt-24 h-screen mb-16 w-full max-w-4xl mx-auto px-4 h-auto bg-white">
         <h1 className="text-2xl font-medium mb-2">Notifications</h1>
 
         <div className="flex justify-center space-x-4 mb-4 border-b border-gray-300">

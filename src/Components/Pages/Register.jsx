@@ -6,6 +6,7 @@ import * as Yup from "yup";
 import BarLoader from "react-spinners/BarLoader";
 import { AuthContext } from "../AppContext/AppContext";
 import { auth, onAuthStateChanged } from "../firebase/firebase";
+import { Helmet } from 'react-helmet';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -23,40 +24,37 @@ const Register = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         navigate("/home");
-        setLoading(false);
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     });
   }, [navigate]);
 
-  let initialValues = {
-    name: "",
+  const initialValues = {
+    firstName: "",
+    secondName: "",
     email: "",
     password: "",
   };
 
   const validationSchema = Yup.object({
-    name: Yup.string()
+    firstName: Yup.string()
+      .required("Required")
+      .min(4, "Must be at least 4 characters long"),
+    secondName: Yup.string()
       .required("Required")
       .min(4, "Must be at least 4 characters long"),
     email: Yup.string().email("Invalid email address").required("Required"),
-    // company: Yup.string()
-    //   .required("Required")
-    //   .min(4, "Must be at least 4 characters long"),
     password: Yup.string()
       .required("Required")
       .min(6, "Must be at least 6 characters long")
       .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).*$/, "Password must contain at least one letter, one number, and one special character"),
   });
-  
-  
 
   const handleRegister = (e) => {
     e.preventDefault();
-    const { name, email, password } = formik.values;
+    const { firstName, secondName, email, password } = formik.values;
     if (formik.isValid) {
-      registerWithEmailAndPassword(name, email, password);
+      registerWithEmailAndPassword(firstName, secondName, email, password);
       setLoading(true);
     } else {
       setLoading(false);
@@ -68,66 +66,72 @@ const Register = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Register | Sanna</title>
+      </Helmet>
       {loading ? (
         <div className="flex flex-col justify-center items-center h-screen">
-        <p className="text-green-500 font-bold mb-4 text-lg md:text-base">Sanna</p>
-        <BarLoader
-          color="#10bc21"
-          height={4}
-          speedMultiplier={1}
-          width={150}
-        />
-      </div>
+          <p className="text-green-500 font-bold mb-4 text-lg md:text-base">Sanna</p>
+          <BarLoader
+            color="#10bc21"
+            height={4}
+            speedMultiplier={1}
+            width={150}
+          />
+        </div>
       ) : (
         <section className="flex flex-col justify-center items-center h-screen p-6 bg-gray-100">
-          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-2xl font-semibold mb-4 text-center">Sign Up</h2>
-            <p className="text-gray-600 text-center mb-6">Nice to meet you</p>
-            <form className="space-y-4" onSubmit={handleRegister}>
-              <div>
-                <label className="block text-gray-700 font-medium text-sm mb-1">Your Name</label>
-                <input
-                  className="w-full px-4 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  type="text"
-                  name="name"
-                  placeholder="John Doe"
-                  {...formik.getFieldProps("name")}
-                />
-                {formik.touched.name && formik.errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{formik.errors.name}</p>
-                )}
+          <div className="w-full max-w-md flex flex-col items-center">
+            <p className="text-green-500 font-bold text-lg md:text-base">Sanna</p>
+            <p className="text-gray-600 text-center my-4">Nice to meet you</p>
+            <form className="bg-white p-8 rounded-lg border border-black-200 space-y-4 w-full" onSubmit={handleRegister}>
+              <div className='flex flex-col md:flex-row w-full gap-3'>
+                <div className='w-full'>
+                  <label className="block text-gray-700 font-medium text-sm mb-1">First Name</label>
+                  <input
+                    className="w-full px-4 py-1 border text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    {...formik.getFieldProps("firstName")}
+                  />
+                  {formik.touched.firstName && formik.errors.firstName && (
+                    <p className="text-red-500 text-sm mt-1">{formik.errors.firstName}</p>
+                  )}
+                </div>
+                <div className='w-full'>
+                  <label className="block text-gray-700 font-medium text-sm mb-1">Second Name</label>
+                  <input
+                    className="w-full px-4 py-1 border text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    name="secondName"
+                    placeholder="Second Name"
+                    {...formik.getFieldProps("secondName")}
+                  />
+                  {formik.touched.secondName && formik.errors.secondName && (
+                    <p className="text-red-500 text-sm mt-1">{formik.errors.secondName}</p>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1">Email</label>
                 <input
-                  className="w-full px-4 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-1 border text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="email"
                   name="email"
-                  placeholder="name@mail.com"
+                  placeholder="youremail@mail.com"
                   {...formik.getFieldProps("email")}
                 />
                 {formik.touched.email && formik.errors.email && (
                   <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
                 )}
               </div>
-              {/* <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Company</label>
-                <input
-                  className="w-full px-4 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  type="text"
-                  name="company"
-                  placeholder="ABC LTD"
-                  {...formik.getFieldProps("company")}
-                />
-                {formik.touched.company && formik.errors.company && (
-                  <p className="text-red-500 text-sm mt-1">{formik.errors.company}</p>
-                )}
-              </div> */}
+
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-1">Password</label>
                 <div className="relative">
                   <input
-                    className="w-full px-4 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-1 border text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     type={passwordShown ? "text" : "password"}
                     name="password"
                     placeholder="********"
@@ -149,14 +153,14 @@ const Register = () => {
                 )}
               </div>
               <button
-                className="w-full py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-200"
+                className="w-full py-1 mt-8 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition duration-200"
                 type="submit"
               >
                 Register
               </button>
               <div className="flex items-center justify-center mt-4">
-                <button className="flex items-center justify-center w-full py-2 border rounded-lg hover:bg-gray-50 transition duration-200"
-                onClick={signInWithGoogle}
+                <button className="flex items-center gap-2 border text-gray-600 text-sm py-2 px-4 rounded-lg hover:bg-green-100 transition duration-300"
+                  onClick={signInWithGoogle}
                 >
                   <img
                     src="https://www.material-tailwind.com/logos/logo-google.png"
@@ -166,10 +170,11 @@ const Register = () => {
                   Sign in with Google
                 </button>
               </div>
-              <div className="text-center mt-4">
-                <p className="text-gray-600 text-sm">Already have an account? <Link to="/login" className="text-green-500 text-sm hover:underline">Login</Link></p>
-              </div>
+
             </form>
+            <div className="text-center mt-4">
+              <p className="text-gray-600 text-sm">Already have an account? <Link to="/login" className="text-green-500 text-sm hover:underline">Login</Link></p>
+            </div>
           </div>
         </section>
       )}

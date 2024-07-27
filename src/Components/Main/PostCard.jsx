@@ -17,6 +17,7 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   deleteDoc,
   addDoc,
 } from "firebase/firestore";
@@ -25,6 +26,9 @@ import CommentSection from "./CommentSection";
 import { formatDistanceToNow } from 'date-fns';
 import { FaLink } from 'react-icons/fa';
 import MediaModal from './MediaModal';
+import { Link, useNavigate } from 'react-router-dom';
+import { useConnection } from "../../utility/ConnectionContext"
+import FollowButton from "../FollowButton/FollowButton"
 
 const FullScreenComments = ({ postId, uid, close }) => {
   return (
@@ -39,7 +43,8 @@ const FullScreenComments = ({ postId, uid, close }) => {
 
 const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, image, timestamp }) => {
   console.log('Media URLs:', media);
-  const { user, userData } = useContext(AuthContext);
+  const { user, userData, profileDetails } = useContext(AuthContext);
+  const { connections, handleConnection } = useConnection();
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const likesRef = doc(collection(db, "posts", id, "likes"));
   const likesCollection = collection(db, "posts", id, "likes");
@@ -47,24 +52,17 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   const [open, setOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const singlePostDocument = doc(db, "posts", id);
   const commentButtonRef = useRef(null);
   const videoRefs = useRef([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const wordLimit = 20;
+  const navigate = useNavigate();
 
-  const [profileDetails, setProfileDetails] = useState({
-    firstName: '',
-    secondName: '',
-    personalPhone: '',
-    businessName: '',
-    businessDescription: '',
-    businessEmail: '',
-    businessPhone: '',
-    profilePicture: '',
-    profileCover: '',
-  });
+
 
   const openModal = (index) => {
     setSelectedMediaIndex(index);
@@ -75,7 +73,11 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     setModalOpen(false);
   };
 
-  useEffect(() => {
+
+  
+
+
+ useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -101,32 +103,6 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   }, []);
 
   useEffect(() => {
-    const fetchProfileDetails = async () => {
-      if (uid) {
-        const docRef = doc(db, 'users', uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfileDetails(docSnap.data());
-        } else {
-          setProfileDetails({
-            firstName: '',
-            secondName: '',
-            personalPhone: '',
-            businessName: '',
-            businessEmail: '',
-            businessPhone: '',
-            profilePicture: '',
-            profileCover: '',
-            businessDescription: '',
-          });
-        }
-      }
-    };
-
-    fetchProfileDetails();
-  }, [uid]);
-
-  useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth <= 768);
     };
@@ -145,45 +121,32 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     }
   };
 
-  const addUser = async () => {
-    try {
-      const q = query(collection(db, "users"), where("uid", "==", user?.uid));
-      const doc = await getDocs(q);
-      const data = doc.docs[0].ref;
-      await updateDoc(data, {
-        friends: arrayUnion({
-          id: uid,
-          image: user.photoURL,
-          name: name,
-        }),
-      });
-    } catch (err) {
-      alert(err.message);
-      console.log(err.message);
-    }
-  };
-
   const handleLike = async (e) => {
     e.preventDefault();
     const q = query(likesCollection, where("id", "==", user?.uid));
     const querySnapshot = await getDocs(q);
-    const likesDocId = await querySnapshot?.docs[0]?.id;
+    const likesDocId = querySnapshot?.docs[0]?.id;
 
     try {
       if (likesDocId !== undefined) {
         const deleteId = doc(db, "posts", id, "likes", likesDocId);
         await deleteDoc(deleteId);
       } else {
+        const likesRef = doc(likesCollection); // Ensure likesRef is defined
         await setDoc(likesRef, {
           id: user?.uid,
         });
-        await addNotification("like", `${user.displayName} liked your post`, uid, id);
+
+        if (user.uid !== uid) { // Check if the action is performed by another user
+          await addNotification("like", `${user.displayName} liked your post`, uid, id);
+        }
       }
     } catch (err) {
       alert(err.message);
       console.log(err.message);
     }
   };
+
 
   const addNotification = async (type, message, userId, postId) => {
     try {
@@ -295,21 +258,54 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
       .catch((err) => console.error("Failed to copy content: ", err));
   };
 
+
+  const handleProfileClick = async (e) => {
+    e.preventDefault();
+    if (uid === user.uid) {
+      alert("You are already viewing your own profile.");
+      return;
+    }
+
+    try {
+      const profileRef = doc(db, "users", uid);
+      const profileSnapshot = await getDoc(profileRef);
+      if (profileSnapshot.exists()) {
+        const profileData = profileSnapshot.data();
+        const status = profileData?.status; // Fetch the connection status from the profile data
+        navigate(`/profile/${uid}`, { state: { status } });
+      } else {
+        console.error("No such profile exists!");
+      }
+    } catch (err) {
+      console.error("Error fetching profile details: ", err);
+    }
+  };
+
+
+
+
+
   return (
     <>
+
       <div className="flex flex-col mb-4 md:mx-8 justify-center">
         <div className="flex flex-col py-4 bg-white border border-gray-300 md:rounded-md w-full md:max-w-2xl md:shadow-md">
           <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
             <img
               className="w-9 h-9 rounded-full"
-              src={profileDetails.profilePicture || avatar}
+              src={post.uid === user?.uid ? profileDetails.profilePicture || avatar : logo}
               alt="avatar"
             />
 
             <div className="flex flex-col ml-4 w-full">
-              <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
-                {profileDetails.firstName} {profileDetails.secondName}
-              </p>
+              <Link to={`/profile/${uid}`} onClick={handleProfileClick}>
+                <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
+                  {post.uid === user?.uid
+                    ? `${profileDetails.firstName} ${profileDetails.secondName}`
+                    : name}
+
+                </p>
+              </Link>
               <div className="flex items-center">
                 <p className="font-sans font-semibold mr-1 text-base md:text-xs text-gray-900">
                   {profileDetails.businessName} --
@@ -319,13 +315,12 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
                 </p>
               </div>
             </div>
+
+            <div>
             {user?.uid !== uid && (
-              <div onClick={addUser} className="cursor-pointer ml-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 fill-green-700 hover:fill-green-500">
-                  <path d="M5.25 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM2.25 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM18.75 7.5a.75.75 0 0 0-1.5 0v2.25H15a.75.75 0 0 0 0 1.5h2.25v2.25a.75.75 0 0 0 1.5 0v-2.25H21a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
-                </svg>
-              </div>
-            )}
+            <FollowButton profileUid={uid} />
+          )}
+            </div>
           </div>
 
           <div className="text-left py-1 md:py-3 px-5 md:px-4">
@@ -340,30 +335,28 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
                 </span>
               )}
             </p>
-
-            <div>
-              {previewData && (
-                <a href={previewData.url} target="_blank" rel="noopener noreferrer">
-                  <div className="url-preview border w-full p-3 bg-white flex flex-col items-center">
-                    <div className='w-full'>
-                      {previewData.image && (
-                        <img src={previewData.image} alt="Preview" className="w-full mr-3 rounded-md" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold">{previewData.title}</h3>
-                      <p className="text-sm text-gray-600">
-                        {truncateSummary(previewData.description)}
-                      </p>
-                      <span className="text-blue-500 text-sm">{previewData.url}</span>
-                    </div>
-                  </div>
-                </a>
-              )}
-            </div>
-
           </div>
 
+          <div>
+            {previewData && (
+              <a href={previewData.url} target="_blank" rel="noopener noreferrer">
+                <div className="url-preview border w-full p-3 bg-white flex flex-col items-center">
+                  <div className='w-full'>
+                    {previewData.image && (
+                      <img src={previewData.image} alt="Preview" className="w-full mr-3 rounded-md" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold">{previewData.title}</h3>
+                    <p className="text-sm text-gray-600">
+                      {truncateSummary(previewData.description)}
+                    </p>
+                    <span className="text-blue-500 text-sm">{previewData.url}</span>
+                  </div>
+                </div>
+              </a>
+            )}
+          </div>
 
           {/* Media rendering */}
           <div className="p-2 flex flex-wrap">
@@ -521,8 +514,8 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
               <div className="flex items-center">
                 <div className="cursor-pointer flex items-center " onClick={handleOpen} ref={commentButtonRef}>
                   <div className="border rounded-full shadow-sm shadow-green-500 flex px-3 py-1 mr-2 items-center">
-                    <span className="text-sm">Question?</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="Yellow" className="h-5 w-5">
+                    <span className="text-sm mr-2">Question?</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="h-4 w-4">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
                     </svg>
                     <span className="text-sm">Say</span>

@@ -1,28 +1,30 @@
 // App.js
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { BrowserRouter as Router } from 'react-router-dom';
 import AppContext from './Components/AppContext/AppContext';
 import Pages from './Components/Pages/Pages';
 
-import './App.css';
+import { ConnectionProvider } from '../src/utility/ConnectionContext';
+import { NotificationProvider } from '../src/utility/NotificationContext'
 
-// Replace 'your-publishable-key-here' with your actual Stripe publishable key
-const stripePromise = loadStripe('pk_test_51PZd0vJIpuZzEOXAgFWUKMSHgwdzAshclJ5lvrMBFSDc9Vz8d22JMmHxooR9GYo0JJZlSKbhLK9ggo1BtzTp6OV500sHrWgIgO');
+import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
+      <Router>
         <AppContext>
-          <Elements stripe={stripePromise}>
-            <Pages />
-          </Elements>
+          <ConnectionProvider>
+            <NotificationProvider>
+              <Pages />
+            </NotificationProvider>
+          </ConnectionProvider>
         </AppContext>
-      </BrowserRouter>
+      </Router>
     </div>
   );
 }
 
 export default App;
+
+

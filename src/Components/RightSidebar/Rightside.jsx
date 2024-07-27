@@ -20,24 +20,26 @@ import { db } from "../firebase/firebase";
 const Rightside = () => {
 
   const [input, setInput] = useState('')
-  const { user, userData } = useContext(AuthContext);
+  const { user, userData, profileDetails } = useContext(AuthContext);
   const friendList = userData?.friends;
 
-  const searchFriends = (data) => {
+  const searchFriends = (data, input) => {
+    if (!input) return data; // Return all items if no input
     return data.filter((item) =>
-      item["name"].toLowerCase().includes(input.toLowerCase())
+        item["name"] && item["name"].toLowerCase().includes(input.toLowerCase())
     );
-  };
+};
 
-  const removeFriend = async (id, name, image) => {
-    const q = query(collection(db, "users"), where("uid", "==", user?.uid));
-    const getDoc = await getDocs(q);
-    const userDocumentId = getDoc.docs[0].id;
 
-    await updateDoc(doc(db, "users", userDocumentId), {
-      friends: arrayRemove({ id: id, name: name, image: image }),
-    });
-  };
+  // const removeFriend = async (id, name, image) => {
+  //   const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+  //   const getDoc = await getDocs(q);
+  //   const userDocumentId = getDoc.docs[0].id;
+
+  //   await updateDoc(doc(db, "users", userDocumentId), {
+  //     friends: arrayRemove({ id: id, name: name, image: image }),
+  //   });
+  // };
 
 
   return (
@@ -52,7 +54,7 @@ const Rightside = () => {
           to enhance your income and recover revenue lost to expiring products.
         </p>
 
-        <div className='mx-6 mt-5'>
+        {/* <div className='mx-6 mt-5'>
           <p className='font-medium text-base md:text-sm text-gray-700 no-underline tracking-normal leading-none'>
             Networks:
           </p>
@@ -71,10 +73,14 @@ const Rightside = () => {
                   className="flex items-center justify-between hover:bg-gray-100 duration-300 ease-in-out"
                   key={friend.id}
                 >
-                  <Link to={`/profile/${friend.id}`}>
+                  <Link to={`/profile/${friend.id}`} key={friend.id}>
                     <div className="flex items-center my-5 cursor-pointer">
                       <div className="flex items-center">
-                        <img className='w-[1.5rem] rounded-full' src={friend?.image || avatar} alt="avatar" />
+                        <img
+                          className="w-[1.5rem] rounded-full"
+                          src={friend?.image || profileDetails.profilePicture || avatar}
+                          alt="avatar"
+                        />
                         <p className="ml-4 font-roboto font-medium text-sm text-gray-700 no-underline tracking-normal leading-none">
                           {friend.name}
                         </p>
@@ -96,7 +102,7 @@ const Rightside = () => {
             </p>
           )}
 
-        </div>
+        </div> */}
       </div>
       {/* <Ads /> */}
     </div>

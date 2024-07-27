@@ -15,19 +15,14 @@ const NavigationBar = () => {
         <div className='text-green-700 text-2xl font-bold ml-16'>
           <Link to="/">Sanna</Link>
         </div>
-        <div className="hidden md:flex items-center mr-24">
-          <ul className="flex space-x-4">
-            <li>
-              <Link to="/login" className='flex items-center text-white hover:text-black px-6 py-2 bg-green-500 hover:bg-white hover:cursor-pointer rounded border hover:border-green-500'>
+        <div className="hidden md:flex items-center mr-24 gap-4">
+              <Link to="/login" className='flex items-center text-white hover:text-black px-6 py-3 bg-green-500 hover:bg-white hover:cursor-pointer rounded-full border hover:border-green-500'>
                 <span className='text-sm'>Sign in</span>
               </Link>
-            </li>
-            <li>
-              <Link to="/register" className='flex items-center hover:cursor-pointer px-6 py-2 rounded text-gray-700 text-sm hover:border-green-500 hover:text-green-700 border'>
+            
+              <Link to="/register" className='flex items-center hover:cursor-pointer px-6 py-3 rounded-full text-gray-700 text-sm hover:bg-green-200 hover:text-white border'>
                 <span className='text-sm'>Register</span>
               </Link>
-            </li>
-          </ul>
         </div>
         <div className="md:hidden">
           <button onClick={toggleMobileMenu} className="text-green-700 focus:outline-none">

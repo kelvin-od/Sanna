@@ -27,7 +27,7 @@ import PostCard from "./PostCard";
 import AdvertPostCard from '../CashCow/AdvertPostCard';
 
 const Main = () => {
-  const { user, userData } = useContext(AuthContext);
+  const { user, userData, profileDetails } = useContext(AuthContext);
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,43 +48,7 @@ const Main = () => {
   const defaultImage = 'path/to/default/image.png';
   const [files, setFiles] = useState([]);
   const [mediaUrls, setMediaUrls] = useState([]);
-  const [profileDetails, setProfileDetails] = useState({
-    name: '',
-    personalPhone: '',
-    businessName: '',
-    businessDescription: '',
-    businessEmail: '',
-    businessPhone: '',
-    profilePicture: '',
-    profileCover: '',
-  });
-
-  useEffect(() => {
-    const fetchProfileDetails = async () => {
-      if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfileDetails(docSnap.data());
-        } else {
-          setProfileDetails({
-            name: user.displayName || userData?.name || '',
-            personalPhone: '',
-            businessName: '',
-            businessDescription: '',
-            businessEmail: '',
-            businessPhone: '',
-            profilePicture: '',
-            profileCover: '',
-          });
-        }
-      }
-    };
-
-    fetchProfileDetails();
-  }, [user, userData]);
-
-
+  
 
   // State for floating icon visibility
   const [showFloatingIcon, setShowFloatingIcon] = useState(false);
@@ -121,14 +85,18 @@ const Main = () => {
     }
   };
 
+  
+
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     const textValue = text.current.value.trim();
     const isLink = urlPattern.test(textValue);
-
+  
     if (textValue !== "" || (files && files.length > 0)) {
       let uploadedMediaUrls = [];
 
+      
+  
       // Upload media files
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
@@ -136,29 +104,34 @@ const Main = () => {
           const isImage = file.type.startsWith('image/');
           const storageRef = ref(storage, `${isImage ? 'images' : 'videos'}/${file.name}`);
           const uploadTask = uploadBytesResumable(storageRef, file);
-
-          await new Promise((resolve, reject) => {
-            uploadTask.on(
-              "state_changed",
-              (snapshot) => {
-                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                setProgressBar(progress);
-              },
-              (error) => {
-                console.error(`Error uploading ${isImage ? 'image' : 'video'}:`, error);
-                alert(error);
-                reject(error);
-              },
-              async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                uploadedMediaUrls.push(downloadURL);
-                resolve();
-              }
-            );
-          });
+  
+          try {
+            await new Promise((resolve, reject) => {
+              uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                  setProgressBar(progress);
+                },
+                (error) => {
+                  console.error(`Error uploading ${isImage ? 'image' : 'video'}:`, error);
+                  alert(error);
+                  reject(error);
+                },
+                async () => {
+                  const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                  uploadedMediaUrls.push(downloadURL);
+                  resolve();
+                }
+              );
+            });
+          } catch (error) {
+            console.error('Upload failed:', error);
+            return;
+          }
         }
       }
-
+  
       // Prepare post data
       const postData = {
         documentId: document,
@@ -166,30 +139,30 @@ const Main = () => {
         logo: user?.photoURL,
         name: user?.displayName || userData?.name,
         email: user?.email || userData?.email,
-        text: isLink ? "" : textValue, // Post text if not a link
+        text: isLink ? textValue : textValue, // Allow text even if it's a link
         media: uploadedMediaUrls,
-        linkPreview: isLink ? previewData : null, // Add link preview data
+        linkPreview: isLink ? previewData : null,
         timestamp: serverTimestamp(),
       };
-
-      // Submit the post
-      await setDoc(postRef, postData);
-
-      // Clear input and reset state
-      text.current.value = "";
-      setFiles([]);
-      setMediaUrls(uploadedMediaUrls);
-      setPreviewData(null); // Reset preview data
-      setProgressBar(0);
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  
+      try {
+        // Submit the post
+        await setDoc(postRef, postData);
+  
+        // Clear input and reset state
+        text.current.value = "";
+        setFiles([]);
+        setMediaUrls([]);
+        setPreviewData(null);
+        setProgressBar(0);
+        scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } catch (error) {
+        console.error('Error submitting post:', error);
+        alert('Failed to submit post.');
+      }
     }
   };
-
-
-
-
-
-
+  
   useEffect(() => {
     const postData = async () => {
       const q = query(collectionRef, orderBy("timestamp", "asc"));
@@ -208,6 +181,7 @@ const Main = () => {
     };
     postData();
   }, [SUBMIT_POST]);
+  
 
   useEffect(() => {
     const fetchAdvertPosts = async () => {
@@ -351,7 +325,7 @@ const Main = () => {
         </div>
         <div className='flex flex-wrap justify-center mt-4'>
           {mediaUrls.map((url, index) => {
-            const isImage = url.match(/\.(jpeg|jpg|gif|png|svg)$/);
+            const isImage = url.match(/\.(jpeg|jpg|gif|png|svg|webp)$/);
             const isVideo = url.match(/\.(mp4|webm|ogg)$/);
 
             if (isImage) {
@@ -435,7 +409,7 @@ const Main = () => {
           </div>
           <div className='flex flex-wrap justify-center mt-4'>
             {mediaUrls.map((url, index) => {
-              const isImage = url.match(/\.(jpeg|jpg|gif|png|svg)$/);
+              const isImage = url.match(/\.(jpeg|jpg|gif|png|svg|webp)$/);
               const isVideo = url.match(/\.(mp4|webm|ogg)$/);
 
               if (isImage) {
@@ -448,8 +422,6 @@ const Main = () => {
           </div>
         </div>
       )}
-
-
 
       {/* Floating Icon */}
       {showFloatingIcon && (
@@ -475,7 +447,7 @@ const Main = () => {
             </div>
           </div>
         ) : (
-          <div className='space-y-2'>
+          <div className='space-y-2 w-full'>
             {combinedPosts.length > 0 &&
               combinedPosts.map((post, index) => {
                 if (post.retailPrice) {

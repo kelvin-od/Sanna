@@ -4,7 +4,7 @@ import { db } from "../firebase/firebase";
 import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 
-const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId, parentId, postId }) => {
+const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId, parentId, postId, onDelete, onEdit, onReply }) => {
     const { user } = useContext(AuthContext);
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
@@ -110,19 +110,29 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     };
 
     const handleDelete = async () => {
+        console.log("postId:", postId);
+        console.log("parentId:", parentId);
+        console.log("id:", id);
+
         if (loggedInUserId === postAuthorId || loggedInUserId === userId) {
             const commentRef = parentId
                 ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
                 : doc(db, `posts/${postId}/comments`, id);
+
+            console.log("Deleting document with reference:", commentRef.path);
+
             try {
                 await deleteDoc(commentRef);
             } catch (error) {
-                console.error("Error deleting document: ", error);
+                console.error("Error deleting document:", error);
             }
         } else {
             console.error("You are not authorized to delete this comment.");
         }
     };
+
+    
+    
 
     const handleReply = async () => {
         if (reply.trim() !== "") {
@@ -185,13 +195,13 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     return (
         <div className="flex items-start mt-2 w-full relative">
             <div className="mx-2">
-                <img className="w-5 h-5 mr-4 mt-2 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
+                <img className="w-6 h-6 mr-4 mt-2 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
             </div>
 
-            <div className="flex flex-col bg-green-50 rounded-lg p-1 mr-5 w-full max-w-[600px] relative">
+            <div className="flex flex-col bg-red-white rounded-lg p-1 w-full max-w-[600px] relative">
                 <div className="flex justify-between w-full">
-                    <div>
-                        <p className="text-black text-xs no-underline tracking-normal leading-none p-1 font-medium">
+                    <div className="bg-green-50 rounded-md p-2 w-full">
+                        <p className="text-gray-700 text-xs no-underline tracking-normal leading-none p-1 font-medium">
                             {profileDetails.firstName && profileDetails.secondName
                                 ? `${profileDetails.firstName} ${profileDetails.secondName}`
                                 : name}
@@ -209,12 +219,13 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                         )}
                     </div>
                     {(loggedInUserId === userId || loggedInUserId === postAuthorId) && (
-                        <div className="relative" ref={menuRef}>
+                        <div className="relative ml-4" ref={menuRef}>
                             <button
                                 onClick={() => handleClick(id)}
                                 className="focus:outline-none flex items-center text-gray-500 text-medium mt-3 hover:text-gray-700 focus:outline-none mr-4"
                             >
-                                ⋮
+                                ...
+
                             </button>
                             {showOptions[id] && (
                                 <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded shadow-md z-10">
@@ -243,31 +254,31 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                         Save
                     </button>
                 )}
-                <div className="flex items-center space-x-2 mt-1">
-                    <button onClick={handleLike} className="text-xs text-gray-500 ml-2 focus:outline-none mt-2">
+                <div className="flex items-center space-x-2">
+                    <button onClick={handleLike} className="text-xs text-gray-500 focus:outline-none">
                         {hasLiked ? "Unlike" : "Like"} ({likes})
                     </button>
                     <button
                         onClick={() => setShowReplyInput(!showReplyInput)}
-                        className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
+                        className="flex text-xs text-gray-500 bottom-0  ml-1 items-center"
                     >
                         Reply
                     </button>
                     {replyCount > 0 && (
                         <button
                             onClick={() => setShowReplies(!showReplies)}
-                            className="flex text-xs text-gray-500 bottom-0 mt-2 ml-1 items-center"
+                            className="flex text-xs text-gray-500 bottom-0 ml-1 items-center"
                         >
                             {showReplies ? "Hide" : "Show"} Replies ({replyCount})
                         </button>
                     )}
                 </div>
                 {showReplyInput && (
-                    <div className="flex flex-col mt-2">
+                    <div className="flex flex-col">
                         <textarea
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
-                            className="text-black text-xs no-underline rounded-lg tracking-normal leading-none p-1 font-normal w-full"
+                            className="text-black text-sm no-underline rounded-lg tracking-normal leading-none p-1 font-normal w-full"
                             placeholder="Write a reply..."
                         />
                         <button
@@ -279,7 +290,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                     </div>
                 )}
                 {showReplies && replies && replies.map((reply) => (
-                    <div key={reply.id} className="ml-6 mt-2 bg-green-50 font-normal text-base md:text-sm border-y border-white">
+                    <div key={reply.id} className="ml-6 mt-2 font-normal text-base md:text-sm border-y border-white">
                         <Comment
                             {...reply}
                             loggedInUserId={loggedInUserId}
