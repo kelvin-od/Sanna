@@ -1,194 +1,139 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
-import { AuthContext } from '../AppContext/AppContext';
-import { db, storage } from '../firebase/firebase';
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  onSnapshot,
-  updateDoc,
-} from 'firebase/firestore';
 import { Helmet } from 'react-helmet';
+import { AuthContext } from '../AppContext/AppContext';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { AiOutlineCloudUpload } from 'react-icons/ai';
+// import ConnectionCount from '../LeftSidebar/ConnectionCount';
+// import ContentCount from '../LeftSidebar/ContentCount';
+// import ReplyCount from '../LeftSidebar/ReplyCount';
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+const FileInput = ({ name, onChange, label, fileName }) => (
+  <div className='flex flex-col mb-6'>
+    <label className='text-gray-700 text-sm font-medium mb-2'>{label}</label>
+    <div className='relative'>
+      <input
+        type="file"
+        name={name}
+        onChange={onChange}
+        id={name}
+        className='absolute inset-0 opacity-0 cursor-pointer'
+      />
+      <label
+        htmlFor={name}
+        className='flex items-center justify-center h-12 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:border-gray-500 transition-all duration-200'
+      >
+        <AiOutlineCloudUpload className='text-gray-500 mr-2' />
+        <span className='text-gray-700'>
+          {fileName ? fileName : 'Drag & drop or click to select file'}
+        </span>
+      </label>
+    </div>
+  </div>
+);
 
 const Profile = () => {
-  const { user, userData, ensureUserDocument } = useContext(AuthContext);
-  const [profileDetails, setProfileDetails] = useState({
-    firstName: '',
-    secondName: '',
-    personalPhone: '',
-    businessName: '',
-    businessEmail: '',
-    businessPhone: '',
-    profilePicture: '',
-    profileCover: '',
-    businessPicture: '',
-    businessDescription: '',
-  });
-  const [userPosts, setUserPosts] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [profilePictureFile, setProfilePictureFile] = useState(null);
-  const [businessPictureFile, setBusinessPictureFile] = useState(null);
-  const [profileCoverFile, setProfileCoverFile] = useState(null);
-
-  // Get the full name from user or userData
-  const fullName = user.name || userData.name || '';
-
-  // Split the full name into an array of names
-  const nameParts = fullName.split(' ');
-
-  // Assign first and second names
-  const firstName = nameParts[0] || '';
-  const secondName = nameParts[1] || '';
-
-  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
-  const [profileCoverPreview, setProfileCoverPreview] = useState(null);
-
+  const { user, userData, updateProfileDetails, ensureUserDocument } = useContext(AuthContext);
+  const [displayName, setDisplayName] = useState(userData?.name || '');
+  const [photoURL, setPhotoURL] = useState(userData?.photoURL || '');
+  const [coverPhotoURL, setCoverPhotoURL] = useState(userData?.profileCover || '');
+  const [email, setEmail] = useState(userData?.email || '');
+  const [password, setPassword] = useState('');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [coverPhotoFile, setCoverPhotoFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchProfileDetails = async () => {
+    const checkAndEnsureUserDocument = async () => {
       if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfileDetails(docSnap.data());
-        } else {
-          setProfileDetails({
-            firstName: user.displayName?.split(' ')[0] || userData?.firstName || '',
-            secondName: user.displayName?.split(' ')[1] || userData?.secondName || '',
-            personalPhone: '',
-            businessName: '',
-            businessEmail: '',
-            businessPhone: '',
-            profilePicture: '',
-            profileCover: '',
-            businessPicture: '',
-            businessDescription: '',
-          });
-        }
+        await ensureUserDocument(user.uid);
       }
     };
 
-    const fetchUserPosts = async () => {
-      if (user) {
-        const postsCollection = collection(db, 'posts');
-        const q = query(postsCollection, where('uid', '==', user.uid));
-        onSnapshot(q, (snapshot) => {
-          setUserPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-        });
-      }
-    };
+    checkAndEnsureUserDocument();
 
-    fetchProfileDetails();
-    fetchUserPosts();
-  }, [user, userData]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProfileDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
-  };
-
-  // const handleFileChange = (e) => {
-  //   if (e.target.name === 'profilePicture') {
-  //     setPreview(URL.createObjectURL(e.target.name === 'profilePicture'));
-  //     setProfilePictureFile(e.target.files[0]);
-  //   } else if (e.target.name === 'businessPicture') {
-  //     setBusinessPictureFile(e.target.files[0]);
-  //   } else if (e.target.name === "profileCover") {
-  //     setProfileCoverFile(e.target.files[0]);
-  //   }
-  // };
+    if (userData) {
+      setDisplayName(userData.name || '');
+      setPhotoURL(userData.photoURL || '');
+      setCoverPhotoURL(userData.profileCover || '');
+      setEmail(userData.email || '');
+    }
+  }, [user, userData, ensureUserDocument]);
 
   const handleFileChange = (e) => {
-    const name = e.target.name;
-    const file = e.target.files[0];
-
-    if (name === 'profilePicture') {
-      setProfilePicturePreview(URL.createObjectURL(file));
-      setProfilePictureFile(file);
-    } else if (name === 'profileCover') {
-      setProfileCoverPreview(URL.createObjectURL(file));
-      setProfileCoverFile(file);
+    if (e.target.name === 'profilePhoto') {
+      setPhotoFile(e.target.files[0]);
+    } else if (e.target.name === 'coverPhoto') {
+      setCoverPhotoFile(e.target.files[0]);
     }
   };
 
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    try {
+      let newPhotoURL = photoURL;
+      let newCoverPhotoURL = coverPhotoURL;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+      const storage = getStorage();
 
-    if (user) {
-      console.log('User UID:', user.uid);
-
-      let profilePictureUrl = profileDetails.profilePicture || '';
-      let businessPictureUrl = profileDetails.businessPicture || '';
-      let profileCoverUrl = profileDetails.profileCover || '';
-
-      if (profilePictureFile) {
-        const storageRef = ref(storage, `profilePictures/${user.uid}`);
-        const uploadTask = await uploadBytes(storageRef, profilePictureFile);
-        profilePictureUrl = await getDownloadURL(uploadTask.ref);
+      // Upload profile photo if available
+      if (photoFile) {
+        const photoStorageRef = ref(storage, `profilePictures/${user.uid}/${photoFile.name}`);
+        await uploadBytes(photoStorageRef, photoFile);
+        newPhotoURL = await getDownloadURL(photoStorageRef);
       }
 
-      if (businessPictureFile) {
-        const businessStorageRef = ref(storage, `businessPictures/${user.uid}`);
-        const businessUploadTask = await uploadBytes(businessStorageRef, businessPictureFile);
-        businessPictureUrl = await getDownloadURL(businessUploadTask.ref);
+      // Upload cover photo if available
+      if (coverPhotoFile) {
+        const coverPhotoStorageRef = ref(storage, `profileCover/${user.uid}/${coverPhotoFile.name}`);
+        await uploadBytes(coverPhotoStorageRef, coverPhotoFile);
+        newCoverPhotoURL = await getDownloadURL(coverPhotoStorageRef);
       }
 
-      if (profileCoverFile) {
-        const coverStorageRef = ref(storage, `profileCover/${user.uid}`);
-        const coverUploadTask = await uploadBytes(coverStorageRef, profileCoverFile);
-        profileCoverUrl = await getDownloadURL(coverUploadTask.ref);
-      }
-
-      const updatedProfileDetails = {
-        ...profileDetails,
-        profilePicture: profilePictureUrl,
-        businessPicture: businessPictureUrl,
-        profileCover: profileCoverUrl
-      };
-
-      // Remove fields with undefined values
-      Object.keys(updatedProfileDetails).forEach(key => {
-        if (updatedProfileDetails[key] === undefined) {
-          delete updatedProfileDetails[key];
-        }
-      });
-
-      const docRef = doc(db, 'users', user.uid);
-
-      try {
-        // Ensure the user document exists
-        await ensureUserDocument(user.uid);
-
-        // Update the Firestore document
-        await updateDoc(docRef, updatedProfileDetails);
-        setProfileDetails(updatedProfileDetails);
-        setIsEditing(false);
+      if (user) {
+        await updateProfileDetails({
+          name: displayName,
+          photoURL: newPhotoURL,
+          email,
+          profileCover: newCoverPhotoURL,
+        });
         alert('Profile updated successfully');
-      } catch (error) {
-        console.error('Error updating profile: ', error);
-        alert('Error updating profile');
       }
+    } catch (error) {
+      alert('Error updating profile: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleUpdateEmail = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        await user.updateEmail(email);
+        await updateProfileDetails({ email });
+        alert('Email updated successfully');
+      }
+    } catch (error) {
+      alert('Error updating email: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-
-
-
-  if (!user || !userData) {
-    return <div>Loading...</div>;
-  }
+  const handleUpdatePassword = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        await user.updatePassword(password);
+        alert('Password updated successfully');
+      }
+    } catch (error) {
+      alert('Error updating password: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -198,194 +143,111 @@ const Profile = () => {
       <div className="fixed top-0 z-10 w-full bg-white border-b">
         <Navbar />
       </div>
-      <section className=" h-screen flex flex-col md:flex-row gap-8 p-4 md:p-8 mt-16 bg-white md:w-full md:px-24 md:justify-center">
-        {/* User activities */}
-        <div className="flex-1 items-center ml-8 h-auto">
-          <div className="flex items-center border border-gray-300 p-2 mb-4 w-full md:w-[87%] rounded gap-4 mx-auto">
-            {profileDetails.profilePicture && (
-              <img src={profileDetails.profilePicture} alt="Profile" className="w-10 h-10 rounded-full" />
-            )}
 
-            <h2 className="text-sm sm:text-5xl font-medium">{firstName || profileDetails.firstName} {secondName || profileDetails.secondName}</h2>
+      <div className='flex mt-16 mx-32'>
+        <div className='flex flex-col w-[40%] mr-4'>
+          <div className='flex'>
+            {coverPhotoURL ? (
+              <img
+                src={coverPhotoURL}
+                alt="Cover Photo"
+                className='rounded-lg border-2 w-full h-auto max-w-screen-lg max-h-48 object-cover'
+              />
+            ) : (
+              <div className='rounded-lg border-2 w-full h-48 max-w-screen-lg max-h-48 flex items-center justify-center bg-white'>
+                <div className='text-center'>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className='w-12 h-12 text-gray-400 mx-auto mb-2'
+                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                  </svg>
 
-            <button
-              className="bg-green-800 ml-auto text-sm text-white py-1 px-4 rounded"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </button>
-          </div>
-          <div className="flex items-center border border-gray-300 p-2 w-full md:w-[87%] rounded gap-4 mx-auto">
-            {profileDetails.profileCover && (
-              <img src={profileDetails.profileCover} alt="Profile" className="w-10 h-10 rounded" />
-            )}
-            <h2 className="text-sm sm:text-5xl font-medium">Your Cover Image</h2>
-
-          </div>
-        </div>
-
-        {/* User details */}
-        <div className="flex-1 border border-gray-300 py-6 h-[50%] px-4 md:px-8 bg-green-50 rounded">
-          <h2 className="text-sm font-medium mb-2">Profile Details</h2>
-          <div className="mb-4">
-            <h3 className="text-sm text-white font-medium mb-2 bg-green-300 p-1 rounded-sm">Personal Details</h3>
-            <div className="text-xs md:text-sm">
-              <p>
-                <strong>First Name: </strong>{firstName || profileDetails.firstName}
-              </p>
-              <p>
-                <strong>Second Name: </strong>{secondName || profileDetails.secondName}
-              </p>
-              <p><strong>Email:</strong> {user.email || userData.email}</p>
-              <p><strong>Phone:</strong> {profileDetails.personalPhone}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {isEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 md:p-6 rounded shadow-lg md:w-[50%] w-[90%]">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4  p-5">
-              <div className="flex flex-col md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-base md:text-sm font-semibold">Personal Details</h3>
-                  <div className='flex gap-4'>
-                    <label className="flex flex-col">
-                      <span className="text-xs md:text-sm">First Name:</span>
-                      <input
-                        className="border p-1 rounded w-full"
-                        type="text"
-                        name="firstName"
-                        value={firstName || profileDetails.firstName}
-                        readOnly
-                      />
-                    </label>
-                    <label className="flex flex-col">
-                      <span className="text-xs md:text-sm">Second Name:</span>
-                      <input
-                        className="border p-1 rounded"
-                        type="text"
-                        name="secondName"
-                        value={secondName || profileDetails.secondName}
-                        readOnly
-                      />
-                    </label>
-                  </div>
-                  <div className='flex gap-3'>
-                    <label className="flex flex-col">
-                      <span className="text-xs md:text-sm">Email:</span>
-                      <input
-                        className="border p-1 rounded"
-                        type="email"
-                        value={user.email || userData.email}
-                        readOnly
-                      />
-                    </label>
-                    <label className="flex flex-col">
-                      <span className="text-xs md:text-sm">Personal Phone:</span>
-                      <input
-                        className="border p-1 rounded"
-                        type="text"
-                        name="personalPhone"
-                        value={profileDetails.personalPhone}
-                        onChange={handleInputChange}
-                      />
-                    </label>
-                  </div>
-                  <div className='flex gap-3'>
-                    <label className="flex flex-col">
-                      <span className="block mb-2 font-medium">Upload Profile Picture</span>
-                      <div className="flex items-center justify-center w-full border border-dashed border-green-500 rounded-lg p-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <svg className="w-8 h-8 text-gray-500" fill="currentColor" stroke='green' viewBox="0 0 20 20">
-                          <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zM4 5h12v10H4V5zm7 3l2.25 3h-1.5l-1.5-2-1.5 2H8.75L10 8zm-3 5a2 2 0 114 0h-4z" />
-                        </svg>
-                        <span className="ml-2 text-sm text-gray-500">Click to upload or drag and drop</span>
-                      </div>
-                      <input
-                        className="hidden"
-                        type="file"
-                        id="profilePicture"
-                        name="profilePicture"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                      {profilePicturePreview && (
-                        <div className="relative w-40 h-40 mt-2 rounded-lg overflow-hidden border border-gray-300">
-                          <img
-                            src={profilePicturePreview}
-                            alt="Profile Cover Preview"
-                            className="object-cover w-full h-full"
-                          />
-                          <button
-                            type="button"
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                            onClick={() => setProfilePicturePreview(null)} // Clear preview
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </label>
-                    <label className="flex flex-col">
-                      <span className="text-xs md:text-sm font-semibold mb-2 block">Profile Cover:</span>
-                      <div className="flex items-center justify-center w-full border border-dashed border-green-500 rounded-lg p-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <svg className="w-8 h-8 text-gray-500" fill="currentColor" stroke='green' viewBox="0 0 20 20">
-                          <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zM4 5h12v10H4V5zm7 3l2.25 3h-1.5l-1.5-2-1.5 2H8.75L10 8zm-3 5a2 2 0 114 0h-4z" />
-                        </svg>
-                        <span className="ml-2 text-sm text-gray-500">Click to upload or drag and drop</span>
-                      </div>
-                      <input
-                        className="hidden"
-                        type="file"
-                        id="profileCover"
-                        name="profileCover"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                      {profileCoverPreview && (
-                        <div className="relative w-40 h-40 mt-2 rounded-lg overflow-hidden border border-gray-300">
-                          <img
-                            src={profileCoverPreview}
-                            alt="Profile Cover Preview"
-                            className="object-cover w-full h-full"
-                          />
-                          <button
-                            type="button"
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                            onClick={() => setProfileCoverPreview(null)} // Clear preview
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-
+                  <span className='text-gray-500'>Upload Cover Photo</span>
                 </div>
               </div>
-              <div className="flex justify-end mt-4 gap-3">
-                <button
-                  className="bg-gray-300 text-sm text-gray-800 py-2 px-4 rounded hover:bg-gray-400"
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </button>
-                <button className="bg-green-500 text-sm text-white py-2 px-4 rounded hover:bg-green-600" type="submit">
-                  Save Changes
-                </button>
+            )}
+            {photoURL ? (
+              <img
+                src={photoURL}
+                alt="Profile"
+                className='absolute border-2 border-green-500 z-10 w-24 h-24 top-52 rounded-full border-2 border-gray-300'
+              />
+            ) : (
+              <div className='absolute border border-green-200 z-10 w-24 h-24 top-52 rounded-full p-3 flex items-center justify-center bg-white'>
+                <div className='text-center'>
+                  <span className='text-gray-500 text-sm'>Upload Profile Photo</span>
+                </div>
               </div>
-            </form>
+            )}
           </div>
+
         </div>
-      )}
-      {/* <div className=' bottom-0'>
-        <Footer />
+        <div className='flex flex-col w-[60%] bg-white px-12 py-8'>
+          <div className='flex flex-col mb-6'>
+            <label className='text-gray-700 text-sm font-medium mb-2'>Display Name</label>
+            <input
+              type="text"
+              name="displayName"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className='p-1 border border-gray-500 rounded-md w-[50%]'
+            />
+          </div>
+          <div className='flex gap-2'>
+            <FileInput name="profilePhoto" onChange={handleFileChange} label="Profile Photo" fileName={photoFile?.name} />
+            <FileInput name="coverPhoto" onChange={handleFileChange} label="Cover Photo" fileName={coverPhotoFile?.name} />
+          </div>
+          <button
+              onClick={handleUpdateProfile}
+              className='border border-gray-300 hover:bg-green-600 hover:text-white text-gray-700 py-1 px-2 rounded w-[30%]'
+              disabled={loading}
+            >
+              {loading ? 'Updating...' : 'Update Profile'}
+            </button>
+          <div className='flex flex-col mb-6'>
+            <label className='text-gray-700 text-sm font-medium my-2'>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className='p-1 border border-gray-500 rounded-md w-[50%]'
+            />
+          </div>
+          <button
+            onClick={handleUpdateEmail}
+            className='border border-gray-300 hover:bg-green-600 hover:text-white text-gray-700 py-1 px-2 rounded w-[30%]'
+            disabled={loading}
+          >
+            {loading ? 'Updating...' : 'Update Email'}
+          </button>
+          <div className='flex flex-col mb-6'>
+            <label className='text-gray-700 text-sm font-medium mb-2'>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className='p-1 border border-gray-500 rounded-md w-[50%]'
+            />
+          </div>
+          <button
+            onClick={handleUpdatePassword}
+            className='border border-gray-300 hover:bg-green-600 hover:text-white text-gray-700 py-1 px-2 rounded w-[30%]'
+            disabled={loading}
+          >
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+      </div>
+      {/* <div className='bg-white p-6 rounded-lg shadow-lg mx-32'>
+        <h2 className='text-xl font-bold mb-4 text-gray-900'>Your Activity</h2>
+        <div className='flex flex-row items-center'>
+          <ConnectionCount />
+          <ContentCount />
+          <ReplyCount />
+        </div>
       </div> */}
     </>
   );

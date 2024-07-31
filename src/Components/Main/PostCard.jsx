@@ -43,7 +43,7 @@ const FullScreenComments = ({ postId, uid, close }) => {
 
 const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, image, timestamp }) => {
   console.log('Media URLs:', media);
-  const { user, userData, profileDetails } = useContext(AuthContext);
+  const { user, userData, getUserDataByUID } = useContext(AuthContext);
   const { connections, handleConnection } = useConnection();
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const likesRef = doc(collection(db, "posts", id, "likes"));
@@ -62,6 +62,19 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   const wordLimit = 20;
   const navigate = useNavigate();
 
+  const [authorData, setAuthorData] = useState(null);
+
+  useEffect(() => {
+    const fetchAuthorData = async () => {
+      const data = await getUserDataByUID(post.uid);
+      setAuthorData(data);
+    };
+
+    if (post.uid) {
+      fetchAuthorData();
+    }
+  }, [post.uid, getUserDataByUID]);
+
 
 
   const openModal = (index) => {
@@ -73,11 +86,7 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     setModalOpen(false);
   };
 
-
-  
-
-
- useEffect(() => {
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -156,6 +165,7 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
         postId,
         message,
         timestamp: new Date(),
+        read: false
       });
     } catch (err) {
       console.error("Error adding notification: ", err);
@@ -192,6 +202,7 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
         console.log(err.message);
       }
     };
+
     const getComments = async () => {
       try {
         const q = collection(db, "posts", id, "comments");
@@ -226,8 +237,6 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
 
     return relativeTime;
   };
-
-
 
   const truncateText = (text, wordLimit) => {
     const words = text.split(' ');
@@ -282,9 +291,6 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   };
 
 
-
-
-
   return (
     <>
 
@@ -293,23 +299,23 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
           <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
             <img
               className="w-9 h-9 rounded-full"
-              src={post.uid === user?.uid ? profileDetails.profilePicture || avatar : logo}
+              // src={post.uid === user?.uid ? user.photoURL || avatar : logo}
+              src={post?.uid === userData?.uid
+                ? userData?.photoURL
+                : authorData?.photoURL || avatar}
               alt="avatar"
             />
 
             <div className="flex flex-col ml-4 w-full">
               <Link to={`/profile/${uid}`} onClick={handleProfileClick}>
-                <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
-                  {post.uid === user?.uid
-                    ? `${profileDetails.firstName} ${profileDetails.secondName}`
-                    : name}
 
+                <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
+                  {post?.uid === userData?.uid
+                    ? userData?.name
+                    : authorData?.name || 'Unknown'}
                 </p>
               </Link>
               <div className="flex items-center">
-                <p className="font-sans font-semibold mr-1 text-base md:text-xs text-gray-900">
-                  {profileDetails.businessName} --
-                </p>
                 <p className="font-sans font-normal text-xs text-gray-700">
                   Published: {formatTimestamp(post.timestamp)}
                 </p>
@@ -317,9 +323,9 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
             </div>
 
             <div>
-            {user?.uid !== uid && (
-            <FollowButton profileUid={uid} />
-          )}
+              {user?.uid !== uid && (
+                <FollowButton profileUid={uid} />
+              )}
             </div>
           </div>
 

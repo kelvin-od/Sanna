@@ -14,12 +14,14 @@ import CrossSell from "./CrossSell";
 import Accounts from "./Accounts";
 import ProtectedRoute from "../../utility/ProtectedRoute";
 import { ConnectionProvider } from '../../utility/ConnectionContext';
-import { NotificationProvider } from '../../utility/NotificationContext'; 
+import { NotificationProvider } from '../../utility/NotificationContext';
+
+
 
 const Pages = () => {
   return (
-    <ConnectionProvider> 
-      <NotificationProvider> 
+    <ConnectionProvider>
+      <NotificationProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -49,6 +51,14 @@ const Pages = () => {
               </ProtectedRoute>
             }
           />
+          {/* <Route
+            path="/notification/:id"
+            element={
+              <ProtectedRoute>
+                <NotificationUsercard />
+              </ProtectedRoute>
+            }
+          /> */}
           <Route
             path="/messaging"
             element={

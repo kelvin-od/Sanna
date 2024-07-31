@@ -27,7 +27,7 @@ import PostCard from "./PostCard";
 import AdvertPostCard from '../CashCow/AdvertPostCard';
 
 const Main = () => {
-  const { user, userData, profileDetails } = useContext(AuthContext);
+  const { user, userData} = useContext(AuthContext);
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +48,7 @@ const Main = () => {
   const defaultImage = 'path/to/default/image.png';
   const [files, setFiles] = useState([]);
   const [mediaUrls, setMediaUrls] = useState([]);
+  const [photoURL, setPhotoURL] = useState(userData?.photoURL || '');
   
 
   // State for floating icon visibility
@@ -94,8 +95,6 @@ const Main = () => {
   
     if (textValue !== "" || (files && files.length > 0)) {
       let uploadedMediaUrls = [];
-
-      
   
       // Upload media files
       if (files && files.length > 0) {
@@ -132,18 +131,21 @@ const Main = () => {
         }
       }
   
-      // Prepare post data
+      // Prepare post data with default values for potentially undefined fields
       const postData = {
-        documentId: document,
-        uid: user?.uid || userData?.uid,
-        logo: user?.photoURL,
-        name: user?.displayName || userData?.name,
-        email: user?.email || userData?.email,
-        text: isLink ? textValue : textValue, // Allow text even if it's a link
+        documentId: document || "",
+        uid: user?.uid || userData?.uid || "",
+        logo: user?.photoURL || "",
+        name: user?.displayName || userData?.name || "",
+        email: user?.email || userData?.email || "",
+        text: textValue, // Allow text even if it's a link
         media: uploadedMediaUrls,
         linkPreview: isLink ? previewData : null,
         timestamp: serverTimestamp(),
       };
+  
+      // Log postData to ensure there are no undefined values
+      console.log("Post Data:", postData);
   
       try {
         // Submit the post
@@ -162,6 +164,7 @@ const Main = () => {
       }
     }
   };
+  
   
   useEffect(() => {
     const postData = async () => {
@@ -232,7 +235,7 @@ const Main = () => {
     <div className='flex flex-col items-center bg-gray-200 md:bg-[#F4F2F2]'>
       <div className='flex flex-col bg-white w-full border-y md:border border-gray-300 w-[93%] md:w-[88%]'>
         <div className='flex items-center bg-white border-b p-3 mt-2 border-green-50'>
-          <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={profileDetails.profilePicture || avatar} alt="avatar" />
+          <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={userData?.photoURL || avatar} alt="avatar" />
           <form className='w-full items-center' action="" onSubmit={handleSubmitPost}>
             <div className='flex justify-between items-center'>
               <div className='w-full ml-4 '>
@@ -342,7 +345,7 @@ const Main = () => {
       {showPopup && (
         <div className='flex fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50'>
           <div className='flex items-center bg-white border-b p-3 mt-2 border-green-50  w-full md:w-[88%] '>
-            <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={profileDetails.profilePicture || avatar} alt="avatar" />
+            <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={photoURL || avatar} alt="avatar" />
             <form className='w-full items-center' action="" onSubmit={(e) => { e.preventDefault(); setShowPopup(false); handleSubmitPost(e); }}>
               <div className='flex justify-between items-center'>
                 <div className='w-full ml-4 '>

@@ -24,7 +24,7 @@ import Comment from "./Comment";
 
 const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
     const comment = useRef("");
-    const { user, userData, profileDetails } = useContext(AuthContext);
+    const { user, userData } = useContext(AuthContext);
     const [state, dispatch] = useReducer(PostsReducer, postsStates);
     const { ADD_COMMENT, HANDLE_ERROR } = postActions;
 
@@ -41,12 +41,12 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
                     timestamp: serverTimestamp(),
                     uid: user.uid,
                 });
-    
+
                 // Check if the comment is made by another user before adding a notification
                 if (user.uid !== uid) {
                     await addNotification("comment", `${user.displayName} added a comment on your post`, uid, postId);
                 }
-    
+
                 comment.current.value = "";
                 setOpen(false); // Close comment section after adding a comment
             } catch (err) {
@@ -56,7 +56,7 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
             }
         }
     };
-    
+
     const addNotification = async (type, message, userId, postId) => {
         try {
             await addDoc(collection(db, "notifications"), {
@@ -65,13 +65,13 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
                 postId,
                 message,
                 timestamp: serverTimestamp(),
-                read: false // Set to false initially
+                read: false
             });
         } catch (err) {
             console.error("Error adding notification: ", err);
         }
     };
-    
+
 
     useEffect(() => {
         const collectionOfComments = collection(db, `posts/${postId}/comments`);
@@ -126,14 +126,18 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
     return (
         <div className={`flex flex-col bg-white w-full py-2 rounded-lg ${open ? '' : 'hidden'}`}>
             <div className="flex items-center mb-1">
-                <div className="mx-2">
-                    <img className="w-[2rem] rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
-                </div>
-                <div className="flex items-center w-full rounded-lg ml-3 mr-5 bg-green-50">
+                
+                    <img
+                        className="w-10 h-10 rounded-full"
+                        src={userData?.photoURL || avatar}
+                        alt="avatar"
+                    />
+                
+                <div className="flex items-center w-full rounded-lg ml-1 mr-1 bg-green-50">
                     <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
 
                 </div>
-                <button className="p-2 mr-2 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
+                <button className="p-1 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
                     Ask
                 </button>
             </div>
@@ -145,6 +149,7 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
                         onEdit={(newComment) => editComment(comment.id, newComment)}
                         onDelete={() => deleteComment(comment.id)}
                         onReply={(reply) => replyToComment(reply, comment.id)}
+                        postId={postId}
                     />
                 ))}
             </div>

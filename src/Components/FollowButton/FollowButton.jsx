@@ -1,35 +1,79 @@
-import React, { useContext } from 'react';
-import { useConnection } from '../../utility/ConnectionContext';
-import { AuthContext } from '../../Components/AppContext/AppContext';
+import React, { useContext, useState, useEffect } from "react";
+import { AuthContext } from "../AppContext/AppContext";
+import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 const FollowButton = ({ profileUid }) => {
-  const { user, profileDetails } = useContext(AuthContext);
-  const { connections, handleConnection } = useConnection();
+  const { user, userData, setUserData } = useContext(AuthContext);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  const isConnected = connections[profileUid];
-  const profileName = `${profileDetails?.firstName || ''} ${profileDetails?.secondName || ''}`.trim();
+  useEffect(() => {
+    if (userData?.following?.includes(profileUid)) {
+      setIsFollowing(true);
+    } else {
+      setIsFollowing(false);
+    }
+  }, [userData, profileUid]);
 
-  const handleConnectionClick = () => {
-    console.log('Follow button clicked with profileUid:', profileUid, 'and profileName:', profileName);
-    handleConnection(profileUid, profileName);
+  const handleFollow = async () => {
+    if (!user) return; // Ensure user is logged in
+
+    const userRef = doc(db, "users", user.uid);
+    const profileRef = doc(db, "users", profileUid);
+
+    try {
+      if (isFollowing) {
+        await updateDoc(userRef, {
+          following: arrayRemove(profileUid),
+        });
+        await updateDoc(profileRef, {
+          followers: arrayRemove(user.uid),
+        });
+        setUserData((prevData) => ({
+          ...prevData,
+          following: prevData.following.filter(id => id !== profileUid)
+        }));
+      } else {
+        await updateDoc(userRef, {
+          following: arrayUnion(profileUid),
+        });
+        await updateDoc(profileRef, {
+          followers: arrayUnion(user.uid),
+        });
+        setUserData((prevData) => ({
+          ...prevData,
+          following: [...prevData.following, profileUid]
+        }));
+      }
+      setIsFollowing(!isFollowing); // Toggle follow state
+    } catch (err) {
+      console.error("Error updating follow status: ", err);
+    }
   };
 
   return (
-    <div
-      className='flex right-4 cursor-pointer ml-auto flex gap-1 py-1 border border-green-500 shadow-sm shadow-green-500 rounded-full px-3 items-center'
-      onClick={handleConnectionClick}
+    <button
+      onClick={handleFollow}
+      className={`px-2 py-1 rounded ${isFollowing ? "bg-[#84cc16]" : "bg-black"} text-white text-xs flex items-center`}
     >
-      {!isConnected ? (
+      {isFollowing ? "Unfollow" : (
         <>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 fill-green-700 hover:fill-green-500">
-            <path d="M5.25 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM2.25 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM18.75 7.5a.75.75 0 0 0-1.5 0v2.25H15a.75.75 0 0 0 0 1.5h2.25v2.25a.75.75 0 0 0 1.5 0v-2.25H21a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            className="h-5 w-5 mr-1"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
           </svg>
-          <p className="text-xs text-green-500">Follow</p>
+          Follow
         </>
-      ) : (
-        <p className="text-xs text-green-500">Following</p>
       )}
-    </div>
+    </button>
   );
 };
 

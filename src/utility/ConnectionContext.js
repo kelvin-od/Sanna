@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { db } from '../Components/firebase/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDoc } from 'firebase/firestore';
-import { AuthContext } from '../../src/Components/AppContext/AppContext';
+import { doc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, onSnapshot } from 'firebase/firestore';
+import { AuthContext } from '../Components/AppContext/AppContext';
 
 const ConnectionContext = createContext();
 
@@ -9,43 +9,39 @@ export const useConnection = () => useContext(ConnectionContext);
 
 export const ConnectionProvider = ({ children }) => {
   const [connections, setConnections] = useState({});
-  const { user, profileDetails } = useContext(AuthContext);
+  const { user, userData } = useContext(AuthContext);
 
   useEffect(() => {
-    if (user?.uid) {
-      const fetchConnections = async () => {
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          const userSnapshot = await getDoc(userRef);
-          if (userSnapshot.exists()) {
-            const userData = userSnapshot.data();
-            const userConnections = userData.friends || [];
-            const connectionMap = userConnections.reduce((acc, friend) => {
-              acc[friend.id] = true;
-              return acc;
-            }, {});
-            setConnections(connectionMap);
-          }
-        } catch (error) {
-          console.error('Error fetching connections:', error);
-        }
-      };
+    if (!user?.uid) return;
 
-      fetchConnections();
-    }
+    const userRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+      if (doc.exists()) {
+        const userData = doc.data();
+        const userConnections = userData.friends || [];
+        const connectionMap = userConnections.reduce((acc, friend) => {
+          acc[friend.id] = true;
+          return acc;
+        }, {});
+        setConnections(connectionMap);
+      }
+    }, (error) => {
+      console.error('Error fetching connections:', error);
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
-  const handleConnection = async (profileUid, profileName) => {
+  const handleConnection = async (profileUid, profileName, photoURL) => {
     if (!profileUid || !profileName || !user?.uid) {
       console.error('Invalid input parameters:', {
         profileUid,
         profileName,
         userUid: user?.uid,
+        photoURL,
       });
       return;
     }
-
-    console.log('handleConnection - user:', user.uid, 'profileUid:', profileUid, 'name:', profileName);
 
     try {
       const userRef = doc(db, 'users', user.uid);
@@ -53,37 +49,35 @@ export const ConnectionProvider = ({ children }) => {
 
       const friendData = {
         id: profileUid,
-        image: profileDetails.profilePicture,
+        image: photoURL,
         name: profileName,
       };
 
       if (connections[profileUid]) {
-        // Disconnect user
-        console.log('Disconnecting user');
+        // Disconnect user without notification
         await updateDoc(userRef, {
           friends: arrayRemove(friendData),
         });
         await updateDoc(profileRef, {
-          friends: arrayRemove({ id: user.uid, image: user.photoURL, name: user.displayName }),
+          friends: arrayRemove({ id: user.uid, image: userData.photoURL, name: userData.name }),
         });
-        await addNotification('unfollow', `${user.displayName} unfollowed you`, profileUid);
       } else {
-        // Connect user
-        console.log('Connecting user');
+        // Connect user with notification
         await updateDoc(userRef, {
           friends: arrayUnion(friendData),
         });
         await updateDoc(profileRef, {
           friends: arrayUnion({
             id: user.uid,
-            image: user.photoURL,
-            name: user.displayName,
+            image: userData.photoURL,
+            name: userData.name,
           }),
         });
-        await addNotification('follow', `${user.displayName} started following you`, profileUid);
+
+        // Add notification for the target user
+        await addNotification('follow', `${userData.name} started following you`, profileUid);
       }
 
-      // Update the connection status in the state
       setConnections((prevConnections) => ({
         ...prevConnections,
         [profileUid]: !connections[profileUid],
@@ -93,13 +87,14 @@ export const ConnectionProvider = ({ children }) => {
     }
   };
 
-  const addNotification = async (type, message, userId) => {
+  const addNotification = async (type, message, targetUserId) => {
     try {
       await addDoc(collection(db, 'notifications'), {
-        userId,
+        userId: targetUserId,
         type,
         message,
         timestamp: new Date(),
+        read: false,
       });
     } catch (err) {
       console.error('Error adding notification: ', err);

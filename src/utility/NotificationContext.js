@@ -46,7 +46,7 @@ export const NotificationProvider = ({ children }) => {
             }, (error) => {
                 console.error("Error fetching likes notifications:", error);
             });
-            
+
             const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
                 setNotificationCounts(prevCounts => ({
                     ...prevCounts,
@@ -55,7 +55,7 @@ export const NotificationProvider = ({ children }) => {
             }, (error) => {
                 console.error("Error fetching comments notifications:", error);
             });
-            
+
             const unsubscribeFollows = onSnapshot(followsQuery, (snapshot) => {
                 setNotificationCounts(prevCounts => ({
                     ...prevCounts,

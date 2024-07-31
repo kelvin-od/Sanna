@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { doc, updateDoc, deleteDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, getDoc, getDocs, collection, addDoc, query, orderBy, onSnapshot, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import avatar from "../../Assets/Images/avatar.jpg";
 import { AuthContext } from "../AppContext/AppContext";
 
 const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId, parentId, postId, onDelete, onEdit, onReply }) => {
-    const { user } = useContext(AuthContext);
+    const { user, getUserDataByUID } = useContext(AuthContext);
     const [showOptions, setShowOptions] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState(comment);
@@ -17,44 +17,17 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     const [showReplies, setShowReplies] = useState(false);
     const [replyCount, setReplyCount] = useState(0);
     const menuRef = useRef(null);
-
-    const [profileDetails, setProfileDetails] = useState({
-        firstName: '',
-        secondName: '',
-        personalPhone: '',
-        businessName: '',
-        businessDescription: '',
-        businessEmail: '',
-        businessPhone: '',
-        profilePicture: '',
-        profileCover: '',
-    });
+    const [commentUserData, setCommentUserData] = useState(null);
 
     useEffect(() => {
-        const fetchProfileDetails = async () => {
+        const fetchUserData = async () => {
             if (uid) {
-                const docRef = doc(db, 'users', uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setProfileDetails(docSnap.data());
-                } else {
-                    setProfileDetails({
-                        firstName: '',
-                        secondName: '',
-                        personalPhone: '',
-                        businessName: '',
-                        businessEmail: '',
-                        businessPhone: '',
-                        profilePicture: '',
-                        profileCover: '',
-                        businessDescription: '',
-                    });
-                }
+                const data = await getUserDataByUID(uid);
+                setCommentUserData(data);
             }
         };
-
-        fetchProfileDetails();
-    }, [uid]);
+        fetchUserData();
+    }, [uid, getUserDataByUID]);
 
     useEffect(() => {
         if (id) {
@@ -110,18 +83,25 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     };
 
     const handleDelete = async () => {
-        console.log("postId:", postId);
-        console.log("parentId:", parentId);
-        console.log("id:", id);
-
         if (loggedInUserId === postAuthorId || loggedInUserId === userId) {
             const commentRef = parentId
                 ? doc(db, `posts/${postId}/comments/${parentId}/replies`, id)
                 : doc(db, `posts/${postId}/comments`, id);
-
-            console.log("Deleting document with reference:", commentRef.path);
-
+    
             try {
+                // If it's a parent comment, delete all its replies first
+                if (!parentId) {
+                    const repliesRef = collection(db, `posts/${postId}/comments/${id}/replies`);
+                    const repliesSnapshot = await getDocs(repliesRef);
+                    const batch = writeBatch(db);
+                    
+                    repliesSnapshot.forEach((replyDoc) => {
+                        batch.delete(replyDoc.ref);
+                    });
+    
+                    await batch.commit();
+                }
+    
                 await deleteDoc(commentRef);
             } catch (error) {
                 console.error("Error deleting document:", error);
@@ -132,26 +112,41 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
     };
 
     
-    
-
     const handleReply = async () => {
-        if (reply.trim() !== "") {
-            try {
-                const collectionOfReplies = collection(db, `posts/${postId}/comments/${id}/replies`);
-                await addDoc(collectionOfReplies, {
-                    comment: reply,
-                    name: user.displayName,
-                    image: user.photoURL,
-                    uid: user.uid,
-                    timestamp: new Date(),
-                });
-                setReply("");
-                setShowReplyInput(false);
-            } catch (error) {
-                console.error("Error adding reply: ", error);
-            }
+        if (reply.trim() === "") {
+            console.error("Reply cannot be empty.");
+            return;
+        }
+
+        // Add logging to check postId and id
+        console.log("postId: ", postId);
+        console.log("id (commentId): ", id);
+
+        try {
+            console.log("Adding reply to path: ", `posts/${postId}/comments/${id}/replies`);
+            console.log("Reply content: ", reply);
+
+            // Path to the replies subcollection
+            const collectionOfReplies = collection(db, `posts/${postId}/comments/${id}/replies`);
+            const newReplyRef = await addDoc(collectionOfReplies, {
+                comment: reply,
+                name: user.displayName,
+                image: user.photoURL,
+                uid: user.uid,
+                timestamp: serverTimestamp(),
+            });
+
+            console.log("Reply added with ID: ", newReplyRef.id);
+            setReply("");
+            setShowReplyInput(false);
+        } catch (error) {
+            console.error("Error adding reply: ", error);
         }
     };
+
+
+    
+    
 
     const handleLike = async () => {
         const commentRef = parentId
@@ -194,16 +189,17 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
 
     return (
         <div className="flex items-start mt-2 w-full relative">
-            <div className="mx-2">
-                <img className="w-6 h-6 mr-4 mt-2 rounded-full" src={loggedInUserId === uid ? user.photoURL : profileDetails.profilePicture || avatar} alt="avatar" />
-            </div>
-
+            <img
+                className="w-10 h-10 rounded-full"
+                src={commentUserData?.photoURL || avatar}
+                alt="avatar"
+            />
             <div className="flex flex-col bg-red-white rounded-lg p-1 w-full max-w-[600px] relative">
                 <div className="flex justify-between w-full">
                     <div className="bg-green-50 rounded-md p-2 w-full">
                         <p className="text-gray-700 text-xs no-underline tracking-normal leading-none p-1 font-medium">
-                            {profileDetails.firstName && profileDetails.secondName
-                                ? `${profileDetails.firstName} ${profileDetails.secondName}`
+                            {commentUserData?.firstName && commentUserData?.secondName
+                                ? `${commentUserData.firstName} ${commentUserData.secondName}`
                                 : name}
                         </p>
                         {isEditing ? (
@@ -213,7 +209,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                                 className="text-black font-normal text-base md:text-sm no-underline tracking-normal leading-none p-1 w-full"
                             />
                         ) : (
-                            <p className="text-black text-sm no-underline tracking-normal leading-none p-1 font-normal">
+                            <p className="text-black text-base md:text-sm no-underline tracking-normal leading-none p-1 font-normal">
                                 {comment}
                             </p>
                         )}
@@ -225,7 +221,6 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                                 className="focus:outline-none flex items-center text-gray-500 text-medium mt-3 hover:text-gray-700 focus:outline-none mr-4"
                             >
                                 ...
-
                             </button>
                             {showOptions[id] && (
                                 <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded shadow-md z-10">
@@ -278,7 +273,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                         <textarea
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
-                            className="text-black text-sm no-underline rounded-lg tracking-normal leading-none p-1 font-normal w-full"
+                            className="text-black text-base no-underline rounded-lg tracking-normal leading-none p-1 font-normal w-full"
                             placeholder="Write a reply..."
                         />
                         <button
@@ -290,7 +285,7 @@ const Comment = ({ name, comment, id, uid, userId, loggedInUserId, postAuthorId,
                     </div>
                 )}
                 {showReplies && replies && replies.map((reply) => (
-                    <div key={reply.id} className="ml-6 mt-2 font-normal text-base md:text-sm border-y border-white">
+                    <div key={reply.id} className="ml-4 font-normal text-base md:text-sm border-y border-white">
                         <Comment
                             {...reply}
                             loggedInUserId={loggedInUserId}
