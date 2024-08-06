@@ -15,6 +15,7 @@ import Accounts from "./Accounts";
 import ProtectedRoute from "../../utility/ProtectedRoute";
 import { ConnectionProvider } from '../../utility/ConnectionContext';
 import { NotificationProvider } from '../../utility/NotificationContext';
+import FollowersList from "../Followers/FollowersList";
 
 
 
@@ -72,6 +73,14 @@ const Pages = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/followers"
+            element={
+              <ProtectedRoute>
+                <FollowersList />
               </ProtectedRoute>
             }
           />

@@ -44,7 +44,9 @@ const Leftside = () => {
       </div>
       <div className='flex items-center my-3 py-2 mx-4 gap-2 lg:w-full md:w-1/2 sm:w-full'>
         <div className="flex md:flex-col gap-2">
-          <ConnectionCount />
+          <Link to="/followers">
+            <ConnectionCount />
+          </Link>
           <ContentCount />
           <ReplyCount />
         </div>

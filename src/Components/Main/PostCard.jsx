@@ -28,7 +28,9 @@ import { FaLink } from 'react-icons/fa';
 import MediaModal from './MediaModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { useConnection } from "../../utility/ConnectionContext"
-import FollowButton from "../FollowButton/FollowButton"
+import FollowButton from "../Button/FollowButton";
+import LikeButton from "../Button/LikeButton";
+
 
 const FullScreenComments = ({ postId, uid, close }) => {
   return (
@@ -59,10 +61,72 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   const videoRefs = useRef([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [lastLike, setLastLike] = useState(null);
   const wordLimit = 20;
   const navigate = useNavigate();
 
   const [authorData, setAuthorData] = useState(null);
+
+
+  const [likeText, setLikeText] = useState('');
+  const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    const getLikes = async () => {
+      try {
+        const q = collection(db, "posts", id, "likes");
+        await onSnapshot(q, (snapshot) => {
+          const likesData = snapshot.docs.map((doc) => doc.data());
+          dispatch({
+            type: ADD_LIKE,
+            likes: likesData,
+          });
+
+          const names = likesData.map((like) => like.name).filter(Boolean);
+          const currentUserLiked = likesData.some((like) => like.id === user?.uid);
+
+          let namesToShow = '';
+          if (likesData.length > 0) {
+            if (likesData.length > 2) {
+              if (currentUserLiked) {
+                namesToShow = `You and ${likesData.length - 1} others`;
+              } else {
+                namesToShow = `${names[0]} and ${likesData.length - 1} others`;
+              }
+            } else {
+              namesToShow = likesData.length;
+            }
+          }
+
+          setLikeText(namesToShow);
+        });
+      } catch (err) {
+        dispatch({ type: HANDLE_ERROR });
+        alert(err.message);
+        console.log(err.message);
+      }
+    };
+
+    const getComments = async () => {
+      try {
+        const q = collection(db, "posts", id, "comments");
+        await onSnapshot(q, (snapshot) => {
+          dispatch({
+            type: ADD_COMMENT,
+            comments: snapshot.docs.map((item) => item.data()),
+          });
+        });
+      } catch (err) {
+        dispatch({ type: HANDLE_ERROR });
+        alert(err.message);
+        console.log(err.message);
+      }
+    };
+
+    getLikes();
+    getComments();
+  }, [id, dispatch, user]);
+
 
   useEffect(() => {
     const fetchAuthorData = async () => {
@@ -130,9 +194,18 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     }
   };
 
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      const q = query(collection(db, "posts", id, "likes"), where("id", "==", user?.uid));
+      const querySnapshot = await getDocs(q);
+      setLiked(!querySnapshot.empty);
+    };
+    checkIfLiked();
+  }, [id, user?.uid]);
+
   const handleLike = async (e) => {
     e.preventDefault();
-    const q = query(likesCollection, where("id", "==", user?.uid));
+    const q = query(collection(db, "posts", id, "likes"), where("id", "==", user?.uid));
     const querySnapshot = await getDocs(q);
     const likesDocId = querySnapshot?.docs[0]?.id;
 
@@ -141,13 +214,14 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
         const deleteId = doc(db, "posts", id, "likes", likesDocId);
         await deleteDoc(deleteId);
       } else {
-        const likesRef = doc(likesCollection); // Ensure likesRef is defined
+        const likesRef = doc(collection(db, "posts", id, "likes"));
         await setDoc(likesRef, {
           id: user?.uid,
+          name: user?.displayName || "Anonymous",
         });
 
-        if (user.uid !== uid) { // Check if the action is performed by another user
-          await addNotification("like", `${user.displayName} liked your post`, uid, id);
+        if (user.uid !== uid) {
+          await addNotification("like", `<strong>${user.displayName}</strong> liked your post`, uid, id, user.displayName);
         }
       }
     } catch (err) {
@@ -157,13 +231,17 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
   };
 
 
-  const addNotification = async (type, message, userId, postId) => {
+
+
+
+  const addNotification = async (type, message, userId, postId, name) => {
     try {
       await addDoc(collection(db, "notifications"), {
         userId,
         type,
         postId,
         message,
+        name,
         timestamp: new Date(),
         read: false
       });
@@ -186,41 +264,41 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     }
   };
 
-  useEffect(() => {
-    const getLikes = async () => {
-      try {
-        const q = collection(db, "posts", id, "likes");
-        await onSnapshot(q, (doc) => {
-          dispatch({
-            type: ADD_LIKE,
-            likes: doc.docs.map((item) => item.data()),
-          });
-        });
-      } catch (err) {
-        dispatch({ type: HANDLE_ERROR });
-        alert(err.message);
-        console.log(err.message);
-      }
-    };
+  // useEffect(() => {
+  //   const getLikes = async () => {
+  //     try {
+  //       const q = collection(db, "posts", id, "likes");
+  //       await onSnapshot(q, (doc) => {
+  //         dispatch({
+  //           type: ADD_LIKE,
+  //           likes: doc.docs.map((item) => item.data()),
+  //         });
+  //       });
+  //     } catch (err) {
+  //       dispatch({ type: HANDLE_ERROR });
+  //       alert(err.message);
+  //       console.log(err.message);
+  //     }
+  //   };
 
-    const getComments = async () => {
-      try {
-        const q = collection(db, "posts", id, "comments");
-        await onSnapshot(q, (doc) => {
-          dispatch({
-            type: ADD_COMMENT,
-            comments: doc.docs.map((item) => item.data()),
-          });
-        });
-      } catch (err) {
-        dispatch({ type: HANDLE_ERROR });
-        alert(err.message);
-        console.log(err.message);
-      }
-    };
-    getLikes();
-    getComments();
-  }, [id, ADD_LIKE, ADD_COMMENT, HANDLE_ERROR]);
+  //   const getComments = async () => {
+  //     try {
+  //       const q = collection(db, "posts", id, "comments");
+  //       await onSnapshot(q, (doc) => {
+  //         dispatch({
+  //           type: ADD_COMMENT,
+  //           comments: doc.docs.map((item) => item.data()),
+  //         });
+  //       });
+  //     } catch (err) {
+  //       dispatch({ type: HANDLE_ERROR });
+  //       alert(err.message);
+  //       console.log(err.message);
+  //     }
+  //   };
+  //   getLikes();
+  //   getComments();
+  // }, [id, ADD_LIKE, ADD_COMMENT, HANDLE_ERROR]);
 
   // Function to format timestamp into a readable date string
   const formatTimestamp = (timestamp) => {
@@ -295,18 +373,20 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
     <>
 
       <div className="flex flex-col mb-4 md:mx-8 justify-center">
-        <div className="flex flex-col py-4 bg-white border border-gray-300 md:rounded-md w-full md:max-w-2xl md:shadow-md">
-          <div className="flex items-center py-2 md:py-4 px-5 md:px-4">
-            <img
-              className="w-9 h-9 rounded-full"
-              // src={post.uid === user?.uid ? user.photoURL || avatar : logo}
-              src={post?.uid === userData?.uid
-                ? userData?.photoURL
-                : authorData?.photoURL || avatar}
-              alt="avatar"
-            />
+        <div className="flex flex-col py-4 bg-white border border-gray-300 md:rounded-md w-full md:max-w-2xl md:shadow-sm">
+          <div className="flex items-center py-2 px-5 md:px-4 border-b">
+            <div className="flex items-center justify-center w-[15%] bg-white">
+              <img
+                className="rounded-full h-10 w-10"
+                // src={post.uid === user?.uid ? user.photoURL || avatar : logo}
+                src={post?.uid === userData?.uid
+                  ? userData?.photoURL
+                  : authorData?.photoURL || avatar}
+                alt="avatar"
+              />
+            </div>
 
-            <div className="flex flex-col ml-4 w-full">
+            <div className="flex flex-col w-full">
               <Link to={`/profile/${uid}`} onClick={handleProfileClick}>
 
                 <p className="font-sans font-semibold text-base md:text-sm text-gray-900">
@@ -503,49 +583,53 @@ const PostCard = ({ uid, id, logo, name, post, media, previewData, email, text, 
             )}
           </div>
 
-
-
-
+          <div className="flex mx-10 justify-between">
+            <div className="flex">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                className={`w-5 h-5 ${state.likes.some((like) => like.id === user?.uid) ? "fill-green-700" : "fill-gray-700"} hover:fill-green-500`}
+              >
+                <path d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+              </svg>
+              <p className="text-sm text-gray-700">
+                {likeText}
+              </p>
+            </div>
+            <div className="flex gap-1">
+              <span className="ml-1 text-sm font-semibold text-gray-700">
+                {state.comments.length}
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+              </svg>
+              <p className="text-sm text-gray-600">Questions Asked</p>
+            </div>
+          </div>
           <div className="flex items-center justify-between px-5 md:mx-8 md:px-4 border-t border-gray-200 py-2 mt-2 md:py-2">
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <div onClick={handleLike} className="cursor-pointer flex items-center mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className={`w-5 h-5 ${state.likes.some((like) => like.id === user?.uid) ? "fill-green-700" : "fill-gray-700"} hover:fill-green-500`}>
-                  <path d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
-                </svg>
-                <span className="ml-1 text-sm text-gray-700">
-                  {state.likes.length}
-                </span>
-              </div>
+            <div>
+              <LikeButton handleLike={handleLike} liked={state.likes.some((like) => like.id === user?.uid)} />
+            </div>
 
-              <div className="flex items-center">
-                <div className="cursor-pointer flex items-center " onClick={handleOpen} ref={commentButtonRef}>
-                  <div className="border rounded-full shadow-sm shadow-green-500 flex px-3 py-1 mr-2 items-center">
-                    <span className="text-sm mr-2">Question?</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="h-4 w-4">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
-                    </svg>
-                    <span className="text-sm">Say</span>
-                  </div>
+            <div className="flex items-center">
+              <div className="cursor-pointer flex items-center " onClick={handleOpen} ref={commentButtonRef}>
+                <div className="border rounded-full shadow-sm shadow-green-500 flex px-3 py-1 mr-2 items-center">
+                  <span className="text-sm mr-2">Question?</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="h-4 w-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
+                  </svg>
+                  <span className="text-sm">Say</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green" className="w-5 h-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                </svg>
-                <span className="ml-1 text-sm text-gray-700">
-                  {state.comments.length}
-                </span>
               </div>
-
-
             </div>
 
-            <div className="flex items-center space-x-4">
-              <button onClick={handleCopyLink} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                <FaLink className="w-4 h-4 text-green-700" />
-                <span>
-                  <p className="text-base md:text-sm font-normal">Copy to Share</p>
-                </span>
-              </button>
-            </div>
+            <button onClick={handleCopyLink} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+              <FaLink className="w-4 h-4 text-green-700" />
+              <span>
+                <p className="text-base md:text-sm font-normal">Copy to Share</p>
+              </span>
+            </button>
 
             <div className="cursor-pointer">
               {user?.uid === uid && (

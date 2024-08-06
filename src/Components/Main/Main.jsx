@@ -27,7 +27,7 @@ import PostCard from "./PostCard";
 import AdvertPostCard from '../CashCow/AdvertPostCard';
 
 const Main = () => {
-  const { user, userData} = useContext(AuthContext);
+  const { user, userData } = useContext(AuthContext);
   const [state, dispatch] = useReducer(PostsReducer, postsStates);
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +49,7 @@ const Main = () => {
   const [files, setFiles] = useState([]);
   const [mediaUrls, setMediaUrls] = useState([]);
   const [photoURL, setPhotoURL] = useState(userData?.photoURL || '');
-  
+
 
   // State for floating icon visibility
   const [showFloatingIcon, setShowFloatingIcon] = useState(false);
@@ -86,16 +86,16 @@ const Main = () => {
     }
   };
 
-  
+
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     const textValue = text.current.value.trim();
     const isLink = urlPattern.test(textValue);
-  
+
     if (textValue !== "" || (files && files.length > 0)) {
       let uploadedMediaUrls = [];
-  
+
       // Upload media files
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
@@ -103,7 +103,7 @@ const Main = () => {
           const isImage = file.type.startsWith('image/');
           const storageRef = ref(storage, `${isImage ? 'images' : 'videos'}/${file.name}`);
           const uploadTask = uploadBytesResumable(storageRef, file);
-  
+
           try {
             await new Promise((resolve, reject) => {
               uploadTask.on(
@@ -130,7 +130,7 @@ const Main = () => {
           }
         }
       }
-  
+
       // Prepare post data with default values for potentially undefined fields
       const postData = {
         documentId: document || "",
@@ -143,14 +143,14 @@ const Main = () => {
         linkPreview: isLink ? previewData : null,
         timestamp: serverTimestamp(),
       };
-  
+
       // Log postData to ensure there are no undefined values
       console.log("Post Data:", postData);
-  
+
       try {
         // Submit the post
         await setDoc(postRef, postData);
-  
+
         // Clear input and reset state
         text.current.value = "";
         setFiles([]);
@@ -164,8 +164,8 @@ const Main = () => {
       }
     }
   };
-  
-  
+
+
   useEffect(() => {
     const postData = async () => {
       const q = query(collectionRef, orderBy("timestamp", "asc"));
@@ -184,7 +184,7 @@ const Main = () => {
     };
     postData();
   }, [SUBMIT_POST]);
-  
+
 
   useEffect(() => {
     const fetchAdvertPosts = async () => {
@@ -233,26 +233,49 @@ const Main = () => {
 
   return (
     <div className='flex flex-col items-center bg-gray-200 md:bg-[#F4F2F2]'>
-      <div className='flex flex-col bg-white w-full border-y md:border border-gray-300 w-[93%] md:w-[88%]'>
+      <div className='flex flex-col bg-white rounded-lg w-full border-y md:border border-gray-300 w-[93%] md:w-[88%]'>
         <div className='flex items-center bg-white border-b p-3 mt-2 border-green-50'>
           <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={userData?.photoURL || avatar} alt="avatar" />
           <form className='w-full items-center' action="" onSubmit={handleSubmitPost}>
             <div className='flex justify-between items-center'>
-              <div className='w-full ml-4 '>
+              <div className='w-full ml-4 relative'>
                 <textarea
-                  className='outline-none w-full h-24 bg-gray-100 border border-gray-300 rounded-md p-2 font-normal text-sm mb-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500'
+                  className='outline-none w-full bg-gray-100 text-justify border border-gray-300 rounded-md font-normal text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500'
                   type="text"
                   name='text'
-                  placeholder={`Share some knowledge about farming/agriculture ${user?.displayName?.split(" ")[0] ||
+                  placeholder={`Share knowledge about farming/agriculture ${user?.displayName?.split(" ")[0] ||
                     userData?.name?.charAt(0).toUpperCase() +
                     userData?.name?.slice(1)
                     }`}
                   ref={text}
                   onChange={(e) => detectURL(e.target.value)}
                 />
-              </div>
-              <div className="ml-3">
-                <button className='bg-green-500 py-1 px-4 text-white text-sm rounded-xs' type='submit'>Share</button>
+                <button className='absolute right-4 top-2 py-1 text-sm rounded-xs' type='submit'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="green"
+                    className="w-8 h-8 p-1 bg-white rounded-full">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                  </svg>
+                </button>
+                <label htmlFor="addImage" className='cursor-pointer items-center flex absolute right-14 top-2  py-1 text-sm rounded-xs'>
+                  {/* <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg> */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="green" className="w-8 h-8 p-1 bg-white rounded-full">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                  </svg>
+
+                  <input
+                    type="file"
+                    id='addImage'
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => setFiles(e.target.files)} />
+                </label>
               </div>
             </div>
           </form>
@@ -303,28 +326,15 @@ const Main = () => {
               </div>
             </a>
           )}
-
-
-
         </div>
         <span
           style={{ width: `${progressBar}%` }}
           className="bg-green-700 py-1 rounded-md"
         ></span>
-        <div className='flex justify-around items-center pt-2'>
-          <div className='flex items-center'>
-            <label htmlFor="addImage" className='cursor-pointer items-center flex'>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              <input
-                type="file"
-                id='addImage'
-                multiple
-                style={{ display: 'none' }}
-                onChange={(e) => setFiles(e.target.files)} />
-            </label>
-          </div>
+        <div className='flex justify-around items-center pt-2 '>
+          {/* <div className='flex items-center'>
+            
+          </div> */}
         </div>
         <div className='flex flex-wrap justify-center mt-4'>
           {mediaUrls.map((url, index) => {
@@ -341,90 +351,6 @@ const Main = () => {
         </div>
       </div>
 
-      {/* Popup */}
-      {showPopup && (
-        <div className='flex fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50'>
-          <div className='flex items-center bg-white border-b p-3 mt-2 border-green-50  w-full md:w-[88%] '>
-            <img sizes='sm' className='w-7 h-7 rounded-full' variant="circular" src={photoURL || avatar} alt="avatar" />
-            <form className='w-full items-center' action="" onSubmit={(e) => { e.preventDefault(); setShowPopup(false); handleSubmitPost(e); }}>
-              <div className='flex justify-between items-center'>
-                <div className='w-full ml-4 '>
-                  <textarea
-                    className='outline-none w-full h-24 bg-gray-100 border border-gray-300 rounded-md p-2 font-normal text-sm mb-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500'
-                    type="text"
-                    name='text'
-                    placeholder={`Share some knowledge about farming/agriculture ${user?.displayName?.split(" ")[0] ||
-                      userData?.name?.charAt(0).toUpperCase() +
-                      userData?.name?.slice(1)
-                      }`}
-                    ref={text} />
-                </div>
-                <div className='mx-4 flex flex-wrap'>
-                  {Array.from(files).map((file, index) => {
-                    const fileType = file.type.split('/')[0];
-                    if (fileType === 'image') {
-                      return (
-                        <img
-                          key={index}
-                          className="h-24 rounded-xl m-1"
-                          src={URL.createObjectURL(file)}
-                          alt={`preview ${index}`}
-                        />
-                      );
-                    } else if (fileType === 'video') {
-                      return (
-                        <video
-                          key={index}
-                          className="h-24 rounded-xl m-1"
-                          src={URL.createObjectURL(file)}
-                          controls
-                          alt={`preview ${index}`}
-                        />
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-                <div className="mr-2">
-                  <button className='bg-green-500 py-1 px-4 text-white text-sm rounded-xs' type='submit'>Share</button>
-                </div>
-              </div>
-            </form>
-          </div>
-          <span
-            style={{ width: `${progressBar}%` }}
-            className="bg-green-700 py-1 rounded-md"
-          ></span>
-          <div className='flex justify-around items-center pt-2'>
-            <div className='flex items-center'>
-              <label htmlFor="addImage" className='cursor-pointer items-center flex'>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-green-700">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                <input
-                  type="file"
-                  id='addImage'
-                  multiple
-                  style={{ display: 'none' }}
-                  onChange={(e) => setFiles(e.target.files)} />
-              </label>
-            </div>
-          </div>
-          <div className='flex flex-wrap justify-center mt-4'>
-            {mediaUrls.map((url, index) => {
-              const isImage = url.match(/\.(jpeg|jpg|gif|png|svg|webp)$/);
-              const isVideo = url.match(/\.(mp4|webm|ogg)$/);
-
-              if (isImage) {
-                return <img key={index} src={url} alt={`media ${index}`} className="w-full h-auto object-cover m-2" />;
-              } else if (isVideo) {
-                return <video key={index} src={url} controls className="w-full h-auto object-cover m-2" />;
-              }
-              return null;
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Floating Icon */}
       {showFloatingIcon && (

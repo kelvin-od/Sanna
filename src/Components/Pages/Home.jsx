@@ -7,7 +7,6 @@ import Main from '../Main/Main';
 import { Helmet } from 'react-helmet';
 
 const Home = () => {
-  
   return (
     <>
       <Helmet>
@@ -16,20 +15,49 @@ const Home = () => {
       <div className="fixed top-0 z-10 w-full bg-white">
         <Navbar />
       </div>
-      <div className='w-full flex flex-col lg:flex-row px-1 lg:px-[8%] mt-20'>
-        <div className='flex-none lg:sticky top-20 w-full lg:w-[20%] h-full mb-4 lg:mb-0'>
-          <Leftside />
+
+      {/* <div className='lg:sticky left-24 lg:w-[20%] lg:mt-20'>
+        <Leftside />
+      </div>
+      <div className='flex absolute lg:w-[50%] z-10 lg:top-0 lg:sticky lg:mx-auto lg:mt-20'>
+        <Main />
+      </div> */}
+
+      <div className='flex flex-col lg:flex-row md:mx-24 lg:mt-20'>
+        <div className='flex-none w-full lg:w-[20%]'>
+          <div className='lg:sticky lg:top-20'>
+            <Leftside />
+          </div>
         </div>
         <div className='flex-initial w-full lg:w-[50%] rounded-xl mb-4 lg:mb-0'>
           <Main />
         </div>
         <div className='flex-initial w-full lg:w-[30%]'>
-          <Rightside />
-          <div className='sticky top-20 mt-4 lg:mt-0'>
-            <Ads />
+          <div className='h-full'>
+            <Rightside />
+            <div className='lg:sticky lg:top-20 mt-4 lg:mt-0'>
+              <Ads />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* <div className='w-full flex flex-col lg:flex-row px-1 lg:px-[8%] lg:mt-20'>
+        <div className='flex-none w-full lg:w-[20%] lg:sticky lg:top-20 h-screen mb-4 lg:mb-0'>
+          <Leftside />
+        </div>
+        <div className='flex-initial w-full lg:w-[50%] rounded-xl mb-4 lg:mb-0'>
+          <Main />
+        </div>
+        <div className='flex-initial w-full lg:w-[30%] h-screen'>
+          <div className='h-full'>
+            <Rightside />
+            <div className='lg:sticky lg:top-20 mt-4 lg:mt-0'>
+              <Ads />
+            </div>
+          </div>
+        </div>
+      </div> */}
     </>
   );
 };

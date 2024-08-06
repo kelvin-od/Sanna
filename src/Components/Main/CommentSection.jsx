@@ -44,7 +44,12 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
 
                 // Check if the comment is made by another user before adding a notification
                 if (user.uid !== uid) {
-                    await addNotification("comment", `${user.displayName} added a comment on your post`, uid, postId);
+                    await addNotification("comment", 
+                        `<strong>${user.displayName}</strong> added a Question on your post`, 
+                        uid, 
+                        postId, 
+                        user.photoURL || avatar, 
+                        comment.current.value);
                 }
 
                 comment.current.value = "";
@@ -57,13 +62,15 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
         }
     };
 
-    const addNotification = async (type, message, userId, postId) => {
+    const addNotification = async (type, message, userId, postId, userPhotoURL, comment) => {
         try {
             await addDoc(collection(db, "notifications"), {
                 userId,
                 type,
                 postId,
                 message,
+                userPhotoURL,
+                comment,
                 timestamp: serverTimestamp(),
                 read: false
             });
@@ -128,13 +135,13 @@ const CommentSection = ({ open, setOpen, postId, uid, loggedInUserId }) => {
             <div className="flex items-center mb-1">
                 
                     <img
-                        className="w-10 h-10 rounded-full"
+                        className="w-8 h-8 rounded-full"
                         src={userData?.photoURL || avatar}
                         alt="avatar"
                     />
                 
                 <div className="flex items-center w-full rounded-lg ml-1 mr-1 bg-green-50">
-                    <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none" placeholder="Ask your Question?"></textarea>
+                    <textarea ref={comment} className="bg-green-50 w-full my-0 text-sm rounded-lg border-none outline-none  resize-none" placeholder="Ask your Question?"></textarea>
 
                 </div>
                 <button className="p-1 text-xs md:text-sm rounded-full bg-green-600 text-white border" onClick={addComment}>
